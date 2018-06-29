@@ -1,0 +1,16 @@
+include LICENSE
+include examples/*.py
+include examples/*.json
+include examples/**/*.py
+include examples/**/*.json
+include tests/*.py
+include tests/**/*.py
+include docsrc/Makefile
+include docsrc/index.rst
+include docsrc/conf.py
+include docsrc/_templates/*.html
+include docsrc/_templates/**/*.html
+include build.sh
+include test
+include .editorconfig
+include .pylintrc

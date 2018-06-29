@@ -1,0 +1,21 @@
+{
+    "domain": "https://cytu.be",
+    "user": {
+        "name": "test12321",
+        "pw": null
+    },
+    "channel": {
+        "name": "test12321",
+        "pw": null
+    },
+    "response_timeout": 0.2,
+    "restart_on_error": false,
+    "retry": 0,
+    "retry_delay": 1,
+    "log_level": "info",
+    "chat_log_file": "chat.log",
+    "video_log_file": "video.log",
+    "markov": "markov.db",
+    "order": null,
+    "learn": false
+}

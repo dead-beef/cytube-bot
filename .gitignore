@@ -1,0 +1,15 @@
+/env
+/build
+/dist
+/*.egg-info
+/docsrc/_build
+/docsrc/source
+/*.json
+/*.db
+/websockets_*
+__pycache__
+.pytest_cache
+.coverage
+*.pyc
+*.bak
+*.log

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+if [ -d env ]; then
+    . env/bin/activate
+fi
+
+if which coverage >/dev/null 2>&1; then
+    coverage run --include 'cytube_bot/*' -m pytest && coverage report -m
+else
+    pytest
+fi
