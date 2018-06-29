@@ -1,9 +1,6 @@
 cytube-bot
 ==========
 
-.. image:: https://img.shields.io/pypi/l/cytube-bot.svg
-   :target: https://github.com/dead-beef/cytube-bot/blob/master/LICENSE
-
 Overview
 --------
 
