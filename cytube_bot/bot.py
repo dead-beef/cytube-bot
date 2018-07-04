@@ -283,13 +283,24 @@ class Bot:
     @asyncio.coroutine
     def trigger(self, event, data):
         self.logger.info('trigger: %s %s', event, data)
-        for handler in self.handlers[event]:
-            if asyncio.iscoroutinefunction(handler):
-                stop = yield from handler(event, data)
-            else:
-                stop = handler(event, data)
-            if stop:
-                break
+        try:
+            for handler in self.handlers[event]:
+                if asyncio.iscoroutinefunction(handler):
+                    stop = yield from handler(event, data)
+                else:
+                    stop = handler(event, data)
+                if stop:
+                    break
+        except asyncio.CancelledError:
+            raise
+        except Exception as ex:
+            self.logger.error('trigger %s %s: %r', event, data, ex)
+            if event != 'error':
+                yield from self.trigger('error', {
+                    'event': event,
+                    'data': data,
+                    'error': ex
+                })
 
     @asyncio.coroutine
     def chat_message(self, msg, to=None, meta=None):

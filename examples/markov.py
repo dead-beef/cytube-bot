@@ -105,13 +105,10 @@ class MarkovBot(Bot):
 
     @asyncio.coroutine
     def _reply(self, ev, username, msg):
-        try:
-            if ev == 'pm':
-                yield from self.chat_message(msg, to=username)
-            else:
-                yield from self.chat_message('%s: %s' % (username, msg))
-        except ChannelPermissionError as ex:
-            self.logger.error('reply(%r, %r, %r): %r', ev, username, msg, ex)
+        if ev == 'pm':
+            yield from self.chat_message(msg, to=username)
+        else:
+            yield from self.chat_message('%s: %s' % (username, msg))
 
     @asyncio.coroutine
     def reply(self, ev, data):
@@ -162,20 +159,14 @@ class MarkovBot(Bot):
         try:
             handler = getattr(self, cmd)
         except AttributeError:
-            try:
-                yield from self.chat_message(
-                    '%s: invalid command "%s"'
-                    % (data['username'], data['cmd'])
-                )
-            except ChannelPermissionError as ex:
-                self.logger.error('command: %r', ex)
+            yield from self.chat_message(
+                '%s: invalid command "%s"'
+                % (data['username'], data['cmd'])
+            )
             return True
 
         if asyncio.iscoroutinefunction(handler):
-            try:
-                yield from handler(data)
-            except ChannelPermissionError as ex:
-                self.logger.error('command: %r', ex)
+            yield from handler(data)
         else:
             handler(data)
 
