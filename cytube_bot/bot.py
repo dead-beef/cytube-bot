@@ -68,7 +68,7 @@ class Bot:
         self.channel.drink_count = data
 
     def _on_usercount(self, _, data):
-        self.channel.user_count = data
+        self.channel.userlist.count = data
 
     def _on_needPassword(self, _, data): # pylint:disable=no-self-use
         if data:
@@ -83,9 +83,9 @@ class Bot:
     def _add_user(self, data):
         if data['name'] == self.user.name:
             self.user.update(**data)
-            self.channel.add_user(self.user)
+            self.channel.userlist.add(self.user)
         else:
-            self.channel.add_user(User(**data))
+            self.channel.userlist.add(User(**data))
 
     def _on_userlist(self, _, data):
         self.channel.users = []
@@ -100,13 +100,13 @@ class Bot:
     def _on_userLeave(self, _, data):
         user = data['name']
         try:
-            self.channel.remove_user(user)
-        except ValueError:
+            del self.channel.userlist[user]
+        except KeyError:
             self.logger.error('userLeave: %s not found', user)
         self.logger.info('userlist: %s', self.channel.users)
 
     def _on_setUserMeta(self, _, data):
-        self.channel.update_user(data['name'], meta=data['meta'])
+        self.channel.userlist[data['name']].meta = data['meta']
 
     def _on_setPlaylistMeta(self, _, data):
         self.channel.playlist.time = data.get('rawTime', 0)

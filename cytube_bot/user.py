@@ -1,6 +1,34 @@
 from .util import uncloak_ip
 
 
+class UserList(dict):
+    """CyTube user list.
+
+    Attributes
+    ----------
+    count : `int`
+    leader : `cytube_bot.user.User` or `None`
+    """
+
+    def __init__(self):
+        super().__init__(self)
+        self.count = 0
+        self._leader = None
+
+    @property
+    def leader(self):
+        return self._leader
+
+    @leader.setter
+    def leader(self, name):
+        self._leader = self[name] if name else None
+
+    def add(self, user):
+        if user.name in self:
+            raise ValueError('user exists: %s' % user.name)
+        self[user.name] = user
+
+
 class User:
     """CyTube user.
 
