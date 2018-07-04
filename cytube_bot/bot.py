@@ -9,8 +9,9 @@ from .error import (
     ChannelPermissionError, Kicked
 )
 from .socket_io import SocketIO, SocketIOError
+from .channel import Channel
 from .user import User
-from .util import get as default_get
+from .util import get as default_get, to_sequence
 
 
 class Bot:
@@ -34,8 +35,8 @@ class Bot:
         self.response_timeout = response_timeout
         self.restart_on_error = restart_on_error
         self.domain = domain
-        self.channel = channel
-        self.user = user if user is not None else User()
+        self.channel = Channel(*to_sequence(channel))
+        self.user = User(*to_sequence(user))
         self.user_count = 0
         self.loop = loop or asyncio.get_event_loop()
         self.server = None

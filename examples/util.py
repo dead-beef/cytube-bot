@@ -3,7 +3,7 @@ import json
 import logging
 from html.parser import unescape, HTMLParser
 
-from cytube_bot import User, Channel, SocketIO
+from cytube_bot import SocketIO
 
 
 class MessageParser(HTMLParser):
@@ -59,24 +59,6 @@ def get_config():
     retry_delay = conf.get('retry_delay', 1)
     log_level = getattr(logging, conf.get('log_level', 'info').upper())
 
-    channel = conf['channel']
-    if isinstance(channel, str):
-        channel = Channel(channel)
-    else:
-        channel = Channel(
-            channel['name'],
-            channel.get('pw', None)
-        )
-
-    user = conf.get('user', None)
-    if isinstance(user, str):
-        user = User(user)
-    elif user is not None:
-        user = User(
-            user['name'],
-            user.get('pw', None)
-        )
-
     logging.basicConfig(
         level=log_level,
         format='[%(asctime).19s] [%(name)s] [%(levelname)s] %(message)s'
@@ -84,8 +66,8 @@ def get_config():
 
     return conf, {
         'domain': conf['domain'],
-        'user': user,
-        'channel': channel,
+        'user': conf.get('user', None),
+        'channel': conf.get('channel', None),
         'response_timeout': conf.get('response_timeout', 0.1),
         'restart_on_error': conf.get('restart_on_error', False),
         'socket_io': lambda url, loop: SocketIO.connect(

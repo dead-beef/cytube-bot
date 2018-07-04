@@ -11,7 +11,7 @@ class Channel:
     Attributes
     ----------
     name : `str`
-    password : `str` or None
+    password : `str` or `None`
     drink_count : `int`
     motd: `str`
     css: `str`
@@ -25,7 +25,7 @@ class Channel:
 
     logger = logging.getLogger(__name__)
 
-    def __init__(self, name, password=None):
+    def __init__(self, name='', password=None):
         self.name = name
         self.password = password
         self.drink_count = 0

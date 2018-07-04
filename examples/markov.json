@@ -1,13 +1,7 @@
 {
     "domain": "https://cytu.be",
-    "user": {
-        "name": "test12321",
-        "pw": null
-    },
-    "channel": {
-        "name": "test12321",
-        "pw": null
-    },
+    "user": ["name", "password"],
+    "channel": ["name", "password"],
     "response_timeout": 0.2,
     "restart_on_error": false,
     "retry": 0,

@@ -3,6 +3,7 @@ import logging
 from hashlib import md5
 from base64 import b64encode
 from itertools import islice
+from collections import Sequence
 
 import requests
 
@@ -20,6 +21,14 @@ else:
         @asyncio.coroutine
         def join(self):
             logger.info('join %s', self)
+
+
+def to_sequence(obj):
+    if obj is None:
+        return ()
+    if isinstance(obj, str) or not isinstance(obj, Sequence):
+        return (obj,)
+    return obj
 
 
 def get(url, loop):
