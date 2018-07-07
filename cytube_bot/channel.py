@@ -13,6 +13,8 @@ class Channel:
     name : `str`
     password : `str` or `None`
     drink_count : `int`
+    voteskip_count: `int`
+    voteskip_need: `int`
     motd: `str`
     css: `str`
     js: `str`
@@ -29,6 +31,8 @@ class Channel:
         self.name = name
         self.password = password
         self.drink_count = 0
+        self.voteskip_count = 0
+        self.voteskip_need = 0
         self.motd = ''
         self.css = ''
         self.js = ''
@@ -49,7 +53,7 @@ class Channel:
             if user.rank < min_rank:
                 if throw:
                     raise ChannelPermissionError(
-                        '"%s": permission denied (%s rank %d < %d)'
+                        '"%s": permission denied (%s rank %s < %s)'
                         % (action, user.name, user.rank, min_rank)
                     )
                 return False

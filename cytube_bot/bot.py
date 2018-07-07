@@ -6,11 +6,12 @@ import collections
 
 from .error import (
     SocketConfigError, LoginError,
-    ChannelPermissionError, Kicked
+    ChannelError, ChannelPermissionError, Kicked
 )
 from .socket_io import SocketIO, SocketIOError
 from .channel import Channel
 from .user import User
+from .playlist import PlaylistItem
 from .util import get as default_get, to_sequence
 
 
@@ -37,7 +38,6 @@ class Bot:
         self.domain = domain
         self.channel = Channel(*to_sequence(channel))
         self.user = User(*to_sequence(user))
-        self.user_count = 0
         self.loop = loop or asyncio.get_event_loop()
         self.server = None
         self.socket = None
@@ -71,14 +71,22 @@ class Bot:
     def _on_usercount(self, _, data):
         self.channel.userlist.count = data
 
-    def _on_needPassword(self, _, data): # pylint:disable=no-self-use
+    @staticmethod
+    def _on_needPassword(_, data):
         if data:
             raise LoginError('invalid channel password')
 
     def _on_noflood(self, _, data):
-        self.loger.error('noflood: %s', data)
+        self.loger.error('noflood: %r', data)
 
-    def _on_kick(self, _, data): # pylint:disable=no-self-use
+    def _on_errorMsg(self, _, data):
+        self.logger.error('error: %r', data)
+
+    def _on_queueFail(self, _, data):
+        self.logger.error('playlist error: %r', data)
+
+    @staticmethod
+    def _on_kick(_, data):
         raise Kicked(data)
 
     def _add_user(self, data):
@@ -89,14 +97,14 @@ class Bot:
             self.channel.userlist.add(User(**data))
 
     def _on_userlist(self, _, data):
-        self.channel.users = []
+        self.channel.userlist.clear()
         for user in data:
             self._add_user(user)
-        self.logger.info('userlist: %s', self.channel.users)
+        self.logger.info('userlist: %s', self.channel.userlist)
 
     def _on_addUser(self, _, data):
         self._add_user(data)
-        self.logger.info('userlist: %s', self.channel.users)
+        self.logger.info('userlist: %s', self.channel.userlist)
 
     def _on_userLeave(self, _, data):
         user = data['name']
@@ -104,10 +112,20 @@ class Bot:
             del self.channel.userlist[user]
         except KeyError:
             self.logger.error('userLeave: %s not found', user)
-        self.logger.info('userlist: %s', self.channel.users)
+        self.logger.info('userlist: %s', self.channel.userlist)
 
     def _on_setUserMeta(self, _, data):
         self.channel.userlist[data['name']].meta = data['meta']
+
+    def _on_setUserRank(self, _, data):
+        self.channel.userlist[data['name']].rank = data['rank']
+
+    def _on_setAFK(self, _, data):
+        self.channel.userlist[data['name']].afk = data['afk']
+
+    def _on_setLeader(self, _, data):
+        self.channel.userlist.leader = data
+        self.logger.info('leader %r', self.channel.userlist.leader)
 
     def _on_setPlaylistMeta(self, _, data):
         self.channel.playlist.time = data.get('rawTime', 0)
@@ -115,6 +133,15 @@ class Bot:
     def _on_mediaUpdate(self, _, data):
         self.channel.playlist.paused = data.get('paused', True)
         self.channel.playlist.current_time = data.get('currentTime', 0)
+
+    def _on_voteskip(self, _, data):
+        self.channel.voteskip_count = data.get('count', 0)
+        self.channel.voteskip_need = data.get('need', 0)
+        self.logger.info(
+            'voteskip %s / %s',
+            self.channel.voteskip_count,
+            self.channel.voteskip_need
+        )
 
     def _on_setCurrent(self, _, data):
         self.channel.playlist.current = data
@@ -131,11 +158,19 @@ class Bot:
     def _on_setTemp(self, _, data):
         self.channel.playlist.get(data['uid']).temp = data['temp']
 
+    def _on_moveVideo(self, _, data):
+        self.channel.playlist.move(data['from'], data['after'])
+        self.logger.info('move %s', self.channel.playlist.queue)
+
     def _on_playlist(self, _, data):
         self.channel.playlist.clear()
         for item in data:
             self.channel.playlist.add(None, item)
         self.logger.info('playlist %s', self.channel.playlist.queue)
+
+    def _on_setPlaylistLocked(self, _, data):
+        self.channel.playlist.locked = data
+        self.logger.info('playlist locked %s', data)
 
     @asyncio.coroutine
     def get_socket_config(self):
@@ -292,7 +327,7 @@ class Bot:
                     stop = handler(event, data)
                 if stop:
                     break
-        except asyncio.CancelledError:
+        except (asyncio.CancelledError, LoginError, Kicked):
             raise
         except Exception as ex:
             self.logger.error('trigger %s %s: %r', event, data, ex)
