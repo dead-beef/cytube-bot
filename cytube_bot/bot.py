@@ -441,26 +441,155 @@ class Bot:
                 })
 
     @asyncio.coroutine
-    def chat_message(self, msg, to=None, meta=None):
-        self.logger.info('chat_message %s', msg)
+    def chat(self, msg, meta=None):
+        """Send a chat message.
+
+        Parameters
+        ----------
+        msg : `str`
+        meta : `None` or `dict`, optional
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        """
+        self.logger.info('chat %s', msg)
         self.channel.check_permission('chat', self.user)
 
-        data = {'msg': msg, 'meta': meta if meta else {}}
-        if to is not None:
-            ev = 'pm'
-            data['to'] = to
-        elif self.user.muted or self.user.smuted:
+        if self.user.muted or self.user.smuted:
             raise ChannelPermissionError('muted')
-        else:
-            ev = 'chatMsg'
 
         res = yield from self.socket.emit(
-            ev, data,
+            'chatMsg',
+            {'msg': msg, 'meta': meta if meta else {}},
             'noflood',
             self.response_timeout
         )
-        if res:
+        if res is not None:
             self.logger.error('chat_message: noflood: %s', res)
             raise ChannelPermissionError(res.get('msg', 'noflood'))
             #if self.MUTED.match(res['msg']):
             #    raise ChannelPermissionError('muted')
+
+    @asyncio.coroutine
+    def pm(self, to, msg, meta=None):
+        """Send a private chat message.
+
+        Parameters
+        ----------
+        to : `str`
+        msg : `str`
+        meta : `None` or `dict`, optional
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        cytube_bot.error.ChannelError
+        """
+        self.logger.info('pm %s %s', to, msg)
+        self.channel.check_permission('chat', self.user)
+
+        if self.user.muted or self.user.smuted:
+            raise ChannelPermissionError('muted')
+
+        res = yield from self.socket.emit(
+            'pm',
+            {'msg': msg, 'to': to, 'meta': meta if meta else {}},
+            'errorMsg',
+            self.response_timeout
+        )
+        if res is not None:
+            self.logger.error('pm: %r', res)
+            raise ChannelError(res.get('msg', '<no message>'))
+
+    @asyncio.coroutine
+    def set_afk(self, value=True):
+        """Set bot AFK.
+
+        Parameters
+        ----------
+        value : `bool`, optional
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        """
+        if self.user.afk != value:
+            yield from self.chat('/afk')
+
+    @asyncio.coroutine
+    def clear_chat(self):
+        """Clear chat.
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        """
+        self.channel.check_permission('chatclear', self.user)
+        yield from self.chat('/clear')
+
+    @asyncio.coroutine
+    def add_media(self, type_, id_, append=True, temp=True):
+        """Add media to playlist.
+
+        Parameters
+        ----------
+        type_ : `str`
+            Media type.
+        id_ : `str`
+            Media ID.
+        append : `bool`, optional
+            `True` - append, `False` - insert after current item.
+        temp : `bool`, optional
+            `True` to add temporary item.
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        cytube_bot.error.ChannelError
+        """
+        action = 'playlist' if self.channel.playlist.locked else 'oplaylist'
+        self.logger.info('add media %s %s', type_, id_)
+        self.channel.check_permission(action + 'add', self.user)
+        if not append:
+            self.channel.check_permission(action + 'next', self.user)
+        if not temp:
+            self.channel.check_permission('addnontemp', self.user)
+
+        res = yield from self.socket.emit(
+            'queue',
+            {
+                'type': type_,
+                'id': id_,
+                'pos': 'end' if append else 'next',
+                'temp': temp
+            },
+            'queueFail',
+            self.response_timeout
+        )
+
+        if res is not None:
+            self.logger.info('queueFail %r', res)
+            raise ChannelError(res.get('msg', '<no message>'))
+
+    @asyncio.coroutine
+    def remove_media(self, item):
+        """Remove playlist item.
+
+        Parameters
+        ----------
+        item: `int` or `cytube_bot.playlist.PlaylistItem`
+            Item to remove.
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        """
+        if self.channel.playlist.locked:
+            action = 'playlistdelete'
+        else:
+            action = 'oplaylistdelete'
+        self.channel.check_permission(action, self.user)
+        if not isinstance(item, PlaylistItem):
+            item = self.playlist.get(item)
+        yield from self.socket.emit('delete', item.uid)

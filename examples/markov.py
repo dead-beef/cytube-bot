@@ -10,7 +10,7 @@ from markovchain import SqliteStorage
 from markovchain.text import MarkovText, ReplyMode
 
 from cytube_bot import Bot
-from cytube_bot.error import CytubeError, SocketIOError, ChannelPermissionError
+from cytube_bot.error import CytubeError, SocketIOError
 
 from util import get_config, configure_logger, MessageParser
 
@@ -106,9 +106,9 @@ class MarkovBot(Bot):
     @asyncio.coroutine
     def _reply(self, ev, username, msg):
         if ev == 'pm':
-            yield from self.chat_message(msg, to=username)
+            yield from self.pm(username, msg)
         else:
-            yield from self.chat_message('%s: %s' % (username, msg))
+            yield from self.chat('%s: %s' % (username, msg))
 
     @asyncio.coroutine
     def reply(self, ev, data):
@@ -159,7 +159,7 @@ class MarkovBot(Bot):
         try:
             handler = getattr(self, cmd)
         except AttributeError:
-            yield from self.chat_message(
+            yield from self.chat(
                 '%s: invalid command "%s"'
                 % (data['username'], data['cmd'])
             )
@@ -177,7 +177,7 @@ class MarkovBot(Bot):
         msg = data['msg']
         if not msg:
             msg = '%s: usage: !echo <text>' % data['username']
-        yield from self.chat_message(msg)
+        yield from self.chat(msg)
 
     @asyncio.coroutine
     def cmd_setorder(self, data):
@@ -197,7 +197,7 @@ class MarkovBot(Bot):
             self.markov_order = order
         except ValueError as ex:
             msg = '%s: %r' % (data['username'], ex)
-        yield from self.chat_message(msg)
+        yield from self.chat(msg)
 
     @asyncio.coroutine
     def cmd_setlearn(self, data):
@@ -210,7 +210,7 @@ class MarkovBot(Bot):
             self.learn_enabled = learn
         else:
             msg = '%s: usage: !setlearn <true|false>' % data['username']
-        yield from self.chat_message(msg)
+        yield from self.chat(msg)
 
     @asyncio.coroutine
     def cmd_settrigger(self, data):
@@ -228,7 +228,7 @@ class MarkovBot(Bot):
                 self.trigger_expr = trigger
             except re.error as ex:
                 msg = '%s: %r' % (data['username'], ex)
-        yield from self.chat_message(msg)
+        yield from self.chat(msg)
 
     @asyncio.coroutine
     def cmd_settings(self, data):
@@ -238,12 +238,12 @@ class MarkovBot(Bot):
             self.learn_enabled,
             self.trigger_expr
         )
-        yield from self.chat_message(msg)
+        yield from self.chat(msg)
 
     @asyncio.coroutine
     def cmd_help(self, _):
         for msg in self.HELP:
-            yield from self.chat_message(msg)
+            yield from self.chat(msg)
             yield from asyncio.sleep(0.2)
 
     @asyncio.coroutine
@@ -262,7 +262,7 @@ class MarkovBot(Bot):
                 reply_to=msg,
                 reply_mode=reply_mode
             )
-        yield from self.chat_message('%s: %s' % (data['username'], msg))
+        yield from self.chat('%s: %s' % (data['username'], msg))
 
     @asyncio.coroutine
     def cmd_markov(self, data):
