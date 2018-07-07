@@ -48,6 +48,29 @@ class Channel:
     __repr__ = __str__
 
     def check_permission(self, action, user, throw=True):
+        """Check if user has permission.
+
+        Parameters
+        ----------
+        action : `str`
+            Permission to check.
+        user : `cytube_bot.user.User`
+            User.
+        throw : `bool`, optional
+            `True` to raise exception if user does not have permission.
+
+        Returns
+        -------
+        `bool`
+            `True` if user has permission.
+
+        Raises
+        ------
+        ChannelPermissionError
+            If user does not have permission.
+        ValueError
+            If permission does not exist.
+        """
         try:
             min_rank = self.permissions[action]
             if user.rank < min_rank:
@@ -62,4 +85,6 @@ class Channel:
             raise ValueError('unknown action "%s"' % action)
 
     def has_permission(self, action, user):
+        """check_permission(action, user, False)
+        """
         return self.check_permission(action, user, False)

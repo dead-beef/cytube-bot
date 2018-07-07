@@ -34,6 +34,19 @@ def wrap_module(module):
 
 
 def set_proxy(addr, port, proxy_type=socks.SOCKS5, modules=None):
+    """Set SOCKS proxy for all connections.
+
+    Parameters
+    ----------
+    addr : `str`
+        Proxy IP.
+    port : `int`
+        Proxy port.
+    proxy_type : `int`, optional
+        `socks.SOCKS4` or `socks.SOCKS5`.
+    modules : `None` or `list` of `types.ModuleType`, optional
+        Modules to wrap (default: (sys.modules[__name__],)).
+    """
     if not HAS_PYSOCKS:
         raise RuntimeError('pysocks is not installed')
     socks.set_default_proxy(

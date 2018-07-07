@@ -4,16 +4,16 @@ class CytubeError(Exception):
 class SocketConfigError(CytubeError):
     pass
 
-class ChannelError(CytubeError):
-    pass
-
-class ChannelPermissionError(CytubeError):
+class LoginError(CytubeError):
     pass
 
 class Kicked(CytubeError):
     pass
 
-class LoginError(CytubeError):
+class ChannelError(CytubeError):
+    pass
+
+class ChannelPermissionError(ChannelError):
     pass
 
 class SocketIOError(Exception):

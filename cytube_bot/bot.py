@@ -16,6 +16,33 @@ from .util import get as default_get, to_sequence
 
 
 class Bot:
+    """CyTube bot.
+
+    Attributes
+    ----------
+    get : `function` (url, loop)
+        HTTP GET coroutine.
+    socket_io : `function` (url, loop)
+        socket.io connect coroutine.
+    response_timeout : `float`
+        socket.io event response timeout in seconds.
+    restart_on_error : `bool`
+        `True` to restart bot on network error.
+    domain : `str`
+        Domain.
+    channel : `cytube_bot.channel.Channel`
+        Channel.
+    user : `cytube_bot.user.User`
+        Bot user.
+    loop : `asyncio.events.AbstractEventLoop`
+        Event loop.
+    server : `None` or `str`
+        socket.io server URL.
+    socket : `None` or `cytube_bot.socket_io.SocketIO`
+        socket.io connection.
+    handlers : `collections.defaultdict` of (`str`, `list` of `function`)
+        Event handlers.
+    """
     logger = logging.getLogger(__name__)
 
     SOCKET_CONFIG_URL = '%(domain)s/socketconfig/%(channel)s.json'
@@ -31,6 +58,26 @@ class Bot:
                  response_timeout=0.1,
                  get=default_get,
                  socket_io=SocketIO.connect):
+        """
+        Parameters
+        ----------
+        domain : `str`
+            Domain.
+        channel : `str` or (`str`, `str`)
+            'name' or ('name', 'password')
+        user : `None` or `str` or (`str`, `str`), optional
+            `None` (anonymous) or 'name' (guest) or ('name', 'password') (registered)
+        restart_on_error : `bool`, optional
+            `True` to restart bot on network error.
+        loop : `asyncio.events.AbstractEventLoop`, optional
+            Event loop.
+        response_timeout : `float`, optional
+            socket.io event response timeout in seconds.
+        get : `function` (url, loop), optional
+            HTTP GET coroutine.
+        socket_io : `function` (url, loop), optional
+            socket.io connect coroutine.
+        """
         self.get = get
         self.socket_io = socket_io
         self.response_timeout = response_timeout
@@ -174,6 +221,12 @@ class Bot:
 
     @asyncio.coroutine
     def get_socket_config(self):
+        """Get server URL.
+
+        Raises
+        ------
+        cytube_bot.error.SocketConfigError
+        """
         data = {
             'domain': self.domain,
             'channel': self.channel.name
@@ -207,6 +260,8 @@ class Bot:
 
     @asyncio.coroutine
     def disconnect(self):
+        """Disconnect.
+        """
         if self.socket is None:
             return
         self.logger.info('disconnect %s', self.server)
@@ -221,6 +276,12 @@ class Bot:
 
     @asyncio.coroutine
     def connect(self):
+        """Get server URL and connect.
+
+        Raises
+        ------
+        `cytube_bot.error.SocketIOError`
+        """
         yield from self.disconnect()
         if self.server is None:
             yield from self.get_socket_config()
@@ -229,6 +290,13 @@ class Bot:
 
     @asyncio.coroutine
     def login(self):
+        """Connect, join channel, log in.
+
+        Raises
+        ------
+        `cytube_bot.error.LoginError`
+        `cytube_bot.error.SocketIOError`
+        """
         yield from self.connect()
 
         self.logger.info('join channel %s', self.channel)
@@ -276,6 +344,8 @@ class Bot:
 
     @asyncio.coroutine
     def run(self):
+        """Main loop.
+        """
         try:
             yield from self.login()
             self.logger.info('start')
@@ -297,6 +367,15 @@ class Bot:
             yield from self.disconnect()
 
     def on(self, event, *handlers):
+        """Add event handlers.
+
+        Parameters
+        ----------
+        event : `str`
+            Event name.
+        handlers : `list` of `function`
+            Event handlers.
+        """
         ev_handlers = self.handlers[event]
         for handler in handlers:
             if handler not in ev_handlers:
@@ -307,6 +386,15 @@ class Bot:
         return self
 
     def off(self, event, *handlers):
+        """Remove event handlers.
+
+        Parameters
+        ----------
+        event : `str`
+            Event name.
+        handlers : `list` of `function`
+            Event handlers.
+        """
         ev_handlers = self.handlers[event]
         for handler in handlers:
             try:
@@ -318,6 +406,20 @@ class Bot:
 
     @asyncio.coroutine
     def trigger(self, event, data):
+        """Trigger an event.
+
+        Parameters
+        ----------
+        event : `str`
+            Event name.
+        data : `object`
+            Event data.
+
+        Raises
+        ------
+        `cytube_bot.error.LoginError`
+        `cytube_bot.error.Kicked`
+        """
         self.logger.info('trigger: %s %s', event, data)
         try:
             for handler in self.handlers[event]:
