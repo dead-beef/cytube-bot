@@ -6,7 +6,10 @@ import logging
 import websockets
 
 from .util import Queue, get as default_get
-from .error import SocketIOError, ConnectionFailed, ConnectionClosed
+from .error import (
+    SocketIOError, ConnectionFailed,
+    ConnectionClosed, PingTimeout
+)
 from .proxy import ProxyError
 
 
@@ -52,17 +55,36 @@ class SocketIO:
         """
         self.websocket = websocket
         self.loop = loop
-        self.error = None
+        self._error = None
+        self.closing = asyncio.Event(loop=self.loop)
         self.closed = asyncio.Event(loop=self.loop)
         self.events = Queue(maxsize=qsize, loop=self.loop)
         self.response = {}
         self.ping_interval = config.get('pingInterval', 10000) / 1000
         self.ping_timeout = config.get('pingTimeout', 10000) / 1000
         self.ping_task = self.loop.create_task(self._ping())
+        self.ping_response = asyncio.Event(loop=self.loop)
         self.recv_task = self.loop.create_task(self._recv())
 
+    @property
+    def error(self):
+        return self._error
+
+    @error.setter
+    def error(self, ex):
+        if self._error is None:
+            self.logger.info('set error %r', ex)
+            self._error = ex
+        else:
+            self.logger.info('error already set: %r', self._error)
+        self.logger.info('queue null event')
+        try:
+            self.events.put_nowait(None)
+        except asyncio.QueueFull:
+            pass
+
     @asyncio.coroutine
-    def close(self, _from_recv=False):
+    def close(self):
         """Close the connection.
         """
         self.logger.info('close')
@@ -70,42 +92,49 @@ class SocketIO:
         if self.closed.is_set():
             self.logger.info('already closed')
             return
-        self.closed.set()
 
-        if self.error is None:
+        if self.closing.is_set():
+            self.logger.info('already closing, wait')
+            yield from self.closed.wait()
+            return
+
+        self.closing.set()
+
+        try:
+            self.logger.info('set error')
             self.error = ConnectionClosed()
 
-        self.logger.info('cancel ping task')
-        self.ping_task.cancel()
-        yield from asyncio.wait_for(self.ping_task, None, loop=self.loop)
+            self.logger.info('cancel ping task')
+            self.ping_task.cancel()
+            yield from asyncio.wait_for(self.ping_task, None, loop=self.loop)
 
-        if _from_recv:
-            self.logger.info('called from recv task')
-        else:
+            self.ping_response.clear()
+
             self.logger.info('cancel recv task')
             self.recv_task.cancel()
             yield from asyncio.wait_for(self.recv_task, None, loop=self.loop)
 
-        self.logger.info('close websocket')
-        yield from self.websocket.close()
+            self.logger.info('close websocket')
+            yield from self.websocket.close()
 
-        self.logger.info('clear event queue')
-        while not self.events.empty():
-            ev = yield from self.events.get()
-            self.events.task_done()
-            if isinstance(ev, Exception):
-                self.error = ev
-        #yield from self.events.join()
+            self.logger.info('clear event queue')
+            while not self.events.empty():
+                ev = yield from self.events.get()
+                self.events.task_done()
+                if isinstance(ev, Exception):
+                    self.error = ev
+            #yield from self.events.join()
 
-        self.logger.info('cancel response futures')
-        for res in self.response.values():
-            if not res.done():
-                res.cancel()
-        self.response = {}
-
-        self.ping_task = None
-        self.recv_task = None
-        self.websocket = None
+            self.logger.info('cancel response futures')
+            for res in self.response.values():
+                if not res.done():
+                    res.cancel()
+            self.response = {}
+        finally:
+            self.ping_task = None
+            self.recv_task = None
+            self.websocket = None
+            self.closed.set()
 
     @asyncio.coroutine
     def recv(self):
@@ -196,25 +225,36 @@ class SocketIO:
     def _ping(self):
         """Ping task."""
         try:
-            while True:
+            while self.error is None:
                 yield from asyncio.sleep(self.ping_interval)
                 self.logger.info('ping')
+                self.ping_response.clear()
                 yield from self.websocket.send('2')
+                yield from asyncio.wait_for(
+                    self.ping_response.wait(),
+                    self.ping_timeout,
+                    loop=self.loop
+                )
         except asyncio.CancelledError:
             self.logger.info('ping cancelled')
+        except asyncio.TimeoutError:
+            self.logger.error('ping timeout')
+            self.error = PingTimeout()
         except (socket.error,
                 ProxyError,
+                websockets.exceptions.ConnectionClosed,
                 websockets.exceptions.InvalidState,
                 websockets.exceptions.PayloadTooBig,
                 websockets.exceptions.WebSocketProtocolError
                ) as ex:
             self.logger.error('ping error: %r', ex)
+            self.error = ConnectionClosed(ex)
 
     @asyncio.coroutine
     def _recv(self):
         """Read task."""
         try:
-            while True:
+            while self.error is None:
                 data = yield from self.websocket.recv()
                 self.logger.debug('recv %s', data)
                 if data.startswith('2'):
@@ -223,6 +263,7 @@ class SocketIO:
                     yield from self.websocket.send('3' + data)
                 elif data.startswith('3'):
                     self.logger.info('pong %s', data[1:])
+                    self.ping_response.set()
                 elif data.startswith('42'):
                     try:
                         data = json.loads(data[2:])
@@ -254,6 +295,7 @@ class SocketIO:
             self.error = ConnectionClosed()
         except (socket.error,
                 ProxyError,
+                websockets.exceptions.ConnectionClosed,
                 websockets.exceptions.InvalidState,
                 websockets.exceptions.PayloadTooBig,
                 websockets.exceptions.WebSocketProtocolError
@@ -263,12 +305,6 @@ class SocketIO:
         except Exception as ex:
             self.error = ConnectionClosed(ex)
             raise
-        finally:
-            try:
-                self.events.put_nowait(None)
-            except asyncio.QueueFull:
-                pass
-            yield from self.close(True)
 
     @classmethod
     def _get_config(cls, url, loop, get):

@@ -24,3 +24,6 @@ class ConnectionFailed(SocketIOError):
 
 class ConnectionClosed(SocketIOError):
     pass
+
+class PingTimeout(ConnectionClosed):
+    pass
