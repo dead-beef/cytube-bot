@@ -529,15 +529,13 @@ class Bot:
         yield from self.chat('/clear')
 
     @asyncio.coroutine
-    def add_media(self, type_, id_, append=True, temp=True):
-        """Add media to playlist.
+    def add_media(self, link, append=True, temp=True):
+        """Add media link to playlist.
 
         Parameters
         ----------
-        type_ : `str`
-            Media type.
-        id_ : `str`
-            Media ID.
+        link : `cytube_bot.media_link.MediaLink`
+            Media link.
         append : `bool`, optional
             `True` - append, `False` - insert after current item.
         temp : `bool`, optional
@@ -549,7 +547,7 @@ class Bot:
         cytube_bot.error.ChannelError
         """
         action = 'playlist' if self.channel.playlist.locked else 'oplaylist'
-        self.logger.info('add media %s %s', type_, id_)
+        self.logger.info('add media %s', link)
         self.channel.check_permission(action + 'add', self.user)
         if not append:
             self.channel.check_permission(action + 'next', self.user)
@@ -559,8 +557,8 @@ class Bot:
         res = yield from self.socket.emit(
             'queue',
             {
-                'type': type_,
-                'id': id_,
+                'type': link.type,
+                'id': link.id,
                 'pos': 'end' if append else 'next',
                 'temp': temp
             },

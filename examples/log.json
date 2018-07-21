@@ -8,5 +8,5 @@
     "retry_delay": 1,
     "log_level": "info",
     "chat_log_file": "chat.log",
-    "video_log_file": "video.log"
+    "media_log_file": "media.log"
 }

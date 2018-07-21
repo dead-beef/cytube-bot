@@ -25,12 +25,12 @@ def log_chat(logger, event, data):
     else:
         logger.info('[%s] %s: %s', time, user, msg)
 
-def log_video(bot, logger, *_):
+def log_media(bot, logger, *_):
     current = bot.channel.playlist.current
     if current is not None:
         logger.info(
-            '%s: %s %s "%s"',
-            current.username, current.type, current.id, current.title
+            '%s: %s "%s"',
+            current.username, current.link.url, current.title
         )
 
 def main():
@@ -38,26 +38,26 @@ def main():
     loop = asyncio.get_event_loop()
 
     chat_logger = logging.getLogger('chat')
-    video_logger = logging.getLogger('video')
+    media_logger = logging.getLogger('media')
     configure_logger(
         chat_logger,
         log_file=conf.get('chat_log_file', None),
         log_format='%(message)s'
     )
     configure_logger(
-        video_logger,
-        log_file=conf.get('video_log_file', None),
+        media_logger,
+        log_file=conf.get('media_log_file', None),
         log_format='[%(asctime).19s] %(message)s'
     )
 
     bot = Bot(loop=loop, **kwargs)
 
     log = partial(log_chat, chat_logger)
-    log_v = partial(log_video, bot, video_logger)
+    log_m = partial(log_media, bot, media_logger)
 
     bot.on('chatMsg', log)
     bot.on('pm', log)
-    bot.on('setCurrent', log_v)
+    bot.on('setCurrent', log_m)
 
     try:
         task = loop.create_task(bot.run())

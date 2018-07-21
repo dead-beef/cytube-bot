@@ -30,7 +30,7 @@ class MarkovBot(Bot):
 
     LINK = re.compile(r'\bhttps?://\S+', re.I)
 
-    def __init__(self, markov, chat_logger, video_logger,
+    def __init__(self, markov, chat_logger, media_logger,
                  *args, order=None, learn=False, **kwargs):
         super().__init__(*args, **kwargs)
         name = re.escape(self.user.name)
@@ -42,7 +42,7 @@ class MarkovBot(Bot):
         self.max_length = 200
         self.chat_parser = MessageParser()
         self.chat_logger = chat_logger
-        self.video_logger = video_logger
+        self.media_logger = media_logger
         self.on(
             'chatMsg',
             self.parse_chat,
@@ -60,7 +60,7 @@ class MarkovBot(Bot):
             self.reply,
             self.learn
         )
-        self.on('setCurrent', self.log_video)
+        self.on('setCurrent', self.log_media)
 
     def normalize(self, msg):
         msg = self.user_name_expr.sub('', msg)
@@ -83,12 +83,12 @@ class MarkovBot(Bot):
         else:
             self.chat_logger.info('[%s] %s: %s', time, user, msg)
 
-    def log_video(self, *_):
+    def log_media(self, *_):
         current = self.channel.playlist.current
         if current is not None:
-            self.video_logger.info(
-                '%s: %s %s "%s"',
-                current.username, current.type, current.id, current.title
+            self.media_logger.info(
+                '%s: %s "%s"',
+                current.username, current.link.url, current.title
             )
 
     def ignore(self, _, data):
@@ -140,8 +140,6 @@ class MarkovBot(Bot):
 
     @asyncio.coroutine
     def command(self, _, data):
-        if self.user.rank < 0:
-            return
         msg = data['msg'].strip()
         if not msg.startswith('!'):
             return
@@ -276,7 +274,7 @@ class MarkovBot(Bot):
 def main():
     conf, kwargs = get_config()
     chat_logger = logging.getLogger('chat')
-    video_logger = logging.getLogger('video')
+    media_logger = logging.getLogger('media')
     loop = asyncio.get_event_loop()
     configure_logger(
         chat_logger,
@@ -285,14 +283,14 @@ def main():
         log_level=logging.INFO
     )
     configure_logger(
-        video_logger,
-        log_file=conf.get('video_log_file', None),
+        media_logger,
+        log_file=conf.get('media_log_file', None),
         log_format='[%(asctime).19s] %(message)s',
         log_level=logging.INFO
     )
     markov = MarkovText.from_file(conf['markov'], storage=SqliteStorage)
     bot = MarkovBot(
-        markov, chat_logger, video_logger,
+        markov, chat_logger, media_logger,
         order=conf.get('order', None),
         learn=conf.get('learn', False),
         loop=loop,

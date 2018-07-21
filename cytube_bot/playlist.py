@@ -1,12 +1,13 @@
+from .media_link import MediaLink
+
+
 class PlaylistItem:
     """CyTube playlist item.
 
     Attributes
     ----------
-    type : `str`
-        Media type.
-    id : `str`
-        Media ID.
+    link : `cytube_bot.media_link.MediaLink`
+        Media link.
     uid : `int`
         Playlist item ID.
     temp : `bool`
@@ -22,10 +23,9 @@ class PlaylistItem:
         self.temp = data['temp']
         self.username = data['queueby']
         data = data['media']
+        self.link = MediaLink(data['type'], data['id'])
         self.title = data['title']
-        self.type = data['type']
         self.duration = data['seconds']
-        self.id = data['id']
 
     def __str__(self):
         return '<playlist item #%s "%s">' % (self.uid, self.title)
