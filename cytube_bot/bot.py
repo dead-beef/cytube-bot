@@ -26,8 +26,9 @@ class Bot:
         socket.io connect coroutine.
     response_timeout : `float`
         socket.io event response timeout in seconds.
-    restart_on_error : `bool`
-        `True` to restart bot on network error.
+    restart_delay : `None` or `float`
+        Delay in seconds before reconnection.
+        `None` or < 0 - do not reconnect.
     domain : `str`
         Domain.
     channel : `cytube_bot.channel.Channel`
@@ -61,7 +62,7 @@ class Bot:
 
     def __init__(self, domain,
                  channel, user=None,
-                 restart_on_error=True,
+                 restart_delay=5,
                  loop=None,
                  response_timeout=0.1,
                  get=default_get,
@@ -75,8 +76,9 @@ class Bot:
             'name' or ('name', 'password')
         user : `None` or `str` or (`str`, `str`), optional
             `None` (anonymous) or 'name' (guest) or ('name', 'password') (registered)
-        restart_on_error : `bool`, optional
-            `True` to restart bot on network error.
+        restart_delay : `None` or `float`, optional
+            Delay in seconds before reconnection.
+            `None` or < 0 - do not reconnect.
         loop : `asyncio.events.AbstractEventLoop`, optional
             Event loop.
         response_timeout : `float`, optional
@@ -89,7 +91,7 @@ class Bot:
         self.get = get
         self.socket_io = socket_io
         self.response_timeout = response_timeout
-        self.restart_on_error = restart_on_error
+        self.restart_delay = restart_delay
         self.domain = domain
         self.channel = Channel(*to_sequence(channel))
         self.user = User(*to_sequence(user))
@@ -362,10 +364,10 @@ class Bot:
                     ev, data = yield from self.socket.recv()
                 except SocketIOError as ex:
                     self.logger.error('network error: %r', ex)
-                    if not self.restart_on_error:
+                    if self.restart_delay is None or self.restart_delay < 0:
                         break
                     self.logger.error('restarting')
-                    yield from asyncio.sleep(self.socket.retry_delay)
+                    yield from asyncio.sleep(self.restart_delay)
                     yield from self.login()
                 else:
                     yield from self.trigger(ev, data)
