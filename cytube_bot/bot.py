@@ -51,6 +51,14 @@ class Bot:
     GUEST_LOGIN_LIMIT = re.compile(r'guest logins .* ([0-9]+) seconds\.', re.I)
     MUTED = re.compile(r'.*\bmuted', re.I)
 
+    EVENT_LOG_LEVEL = {
+        'mediaUpdate': logging.DEBUG,
+        'channelCSSJS': logging.DEBUG,
+        'emoteList': logging.DEBUG
+    }
+
+    EVENT_LOG_LEVEL_DEFAULT = logging.INFO
+
     def __init__(self, domain,
                  channel, user=None,
                  restart_on_error=True,
@@ -382,7 +390,7 @@ class Bot:
                 ev_handlers.append(handler)
                 self.logger.info('on: %s %s', event, handler)
             else:
-                self.logger.info('on: handler exists: %s %s', event, handler)
+                self.logger.warning('on: handler exists: %s %s', event, handler)
         return self
 
     def off(self, event, *handlers):
@@ -401,7 +409,10 @@ class Bot:
                 ev_handlers.remove(handler)
                 self.logger.info('off: %s %s', event, handler)
             except ValueError:
-                self.logger.info('off: handler not found: %s %s', event, handler)
+                self.logger.warning(
+                    'off: handler not found: %s %s',
+                    event, handler
+                )
         return self
 
     @asyncio.coroutine
@@ -420,7 +431,8 @@ class Bot:
         `cytube_bot.error.LoginError`
         `cytube_bot.error.Kicked`
         """
-        self.logger.info('trigger: %s %s', event, data)
+        level = self.EVENT_LOG_LEVEL.get(event, self.EVENT_LOG_LEVEL_DEFAULT)
+        self.logger.log(level, 'trigger: %s %s', event, data)
         try:
             for handler in self.handlers[event]:
                 if asyncio.iscoroutinefunction(handler):
@@ -466,7 +478,7 @@ class Bot:
             self.response_timeout
         )
         if res is not None:
-            self.logger.error('chat_message: noflood: %s', res)
+            self.logger.error('chat: noflood: %s', res)
             raise ChannelPermissionError(res.get('msg', 'noflood'))
             #if self.MUTED.match(res['msg']):
             #    raise ChannelPermissionError('muted')
