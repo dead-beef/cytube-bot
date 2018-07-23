@@ -5,11 +5,15 @@ import logging
 try:
     import socks
     HAS_PYSOCKS = True
+    SOCKS5 = socks.SOCKS5
     ProxyError = socks.ProxyError
 except ImportError:
     HAS_PYSOCKS = False
+    SOCKS5 = None
     class ProxyError(Exception):
         pass
+
+from .error import ProxyConfigError
 
 
 logger = logging.getLogger('socks.getaddrinfo')
@@ -33,7 +37,7 @@ def wrap_module(module):
     module.socket.getaddrinfo = getaddrinfo
 
 
-def set_proxy(addr, port, proxy_type=socks.SOCKS5, modules=None):
+def set_proxy(addr, port, proxy_type=SOCKS5, modules=None):
     """Set SOCKS proxy for all connections.
 
     Parameters
@@ -46,9 +50,14 @@ def set_proxy(addr, port, proxy_type=socks.SOCKS5, modules=None):
         `socks.SOCKS4` or `socks.SOCKS5`.
     modules : `None` or `list` of `types.ModuleType`, optional
         Modules to wrap (default: (sys.modules[__name__],)).
+
+    Raises
+    ------
+    cytube_bot.error.ProxyConfigError
+        If pysocks is not installed.
     """
     if not HAS_PYSOCKS:
-        raise RuntimeError('pysocks is not installed')
+        raise ProxyConfigError('pysocks is not installed')
     socks.set_default_proxy(
         proxy_type=proxy_type,
         addr=addr,

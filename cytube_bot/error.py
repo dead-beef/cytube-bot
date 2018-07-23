@@ -1,6 +1,9 @@
 class CytubeError(Exception):
     pass
 
+class ProxyConfigError(CytubeError):
+    pass
+
 class SocketConfigError(CytubeError):
     pass
 
