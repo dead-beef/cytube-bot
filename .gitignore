@@ -5,7 +5,7 @@
 /docsrc/_build
 /docsrc/source
 /*.json
-/*.db
+/*.db*
 /websockets_*
 __pycache__
 .pytest_cache
