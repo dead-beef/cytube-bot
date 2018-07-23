@@ -2,6 +2,7 @@ import json
 import socket
 import asyncio
 import logging
+from time import time
 
 import websockets
 
@@ -24,16 +25,16 @@ class SocketIO:
         Ping interval in seconds.
     ping_timeout : `float`
         Ping timeout in seconds.
-    ping_task : `asyncio.tasks.Task`
-        Ping task.
-    recv_task : `asyncio.tasks.Task`
-        Read task.
     error : `None` or `Exception`
-        Connection error.
     events : `asyncio.Queue` of ((`str`, `object`) or `None`)
         Event queue.
-    response : `dict` of (`str`, `Response`)
+    response : `dict` of (`str`, `asyncio.Future`)
+        (event, response future)
+    ping_task : `asyncio.tasks.Task`
+    recv_task : `asyncio.tasks.Task`
+    closing : `asyncio.Event`
     closed : `asyncio.Event`
+    ping_response : `asyncio.Event`
     loop : `asyncio.events.AbstractEventLoop`
         Event loop.
     """
@@ -58,12 +59,12 @@ class SocketIO:
         self._error = None
         self.closing = asyncio.Event(loop=self.loop)
         self.closed = asyncio.Event(loop=self.loop)
+        self.ping_response = asyncio.Event(loop=self.loop)
         self.events = Queue(maxsize=qsize, loop=self.loop)
         self.response = {}
-        self.ping_interval = config.get('pingInterval', 10000) / 1000
-        self.ping_timeout = config.get('pingTimeout', 10000) / 1000
+        self.ping_interval = max(1, config.get('pingInterval', 10000) / 1000)
+        self.ping_timeout = max(1, config.get('pingTimeout', 10000) / 1000)
         self.ping_task = self.loop.create_task(self._ping())
-        self.ping_response = asyncio.Event(loop=self.loop)
         self.recv_task = self.loop.create_task(self._recv())
 
     @property
@@ -225,16 +226,19 @@ class SocketIO:
     def _ping(self):
         """Ping task."""
         try:
+            dt = 0
             while self.error is None:
-                yield from asyncio.sleep(self.ping_interval)
-                self.logger.info('ping')
+                yield from asyncio.sleep(max(self.ping_interval - dt, 0))
+                self.logger.debug('ping')
                 self.ping_response.clear()
+                dt = time()
                 yield from self.websocket.send('2')
                 yield from asyncio.wait_for(
                     self.ping_response.wait(),
                     self.ping_timeout,
                     loop=self.loop
                 )
+                dt = max(time() - dt, 0)
         except asyncio.CancelledError:
             self.logger.info('ping cancelled')
         except asyncio.TimeoutError:
@@ -259,10 +263,10 @@ class SocketIO:
                 self.logger.debug('recv %s', data)
                 if data.startswith('2'):
                     data = data[1:]
-                    self.logger.info('ping %s', data)
+                    self.logger.debug('ping %s', data)
                     yield from self.websocket.send('3' + data)
                 elif data.startswith('3'):
-                    self.logger.info('pong %s', data[1:])
+                    self.logger.debug('pong %s', data[1:])
                     self.ping_response.set()
                 elif data.startswith('42'):
                     try:
@@ -370,7 +374,7 @@ class SocketIO:
             yield from websocket.send('5')
             return SocketIO(websocket, conf, qsize, loop)
         except:
-            websocket.close()
+            yield from websocket.close()
             raise
 
     @classmethod
