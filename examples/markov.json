@@ -1,10 +1,11 @@
 {
+    "proxy": null,
     "domain": "https://cytu.be",
     "user": ["name", "password"],
     "channel": ["name", "password"],
     "response_timeout": 0.2,
-    "restart_on_error": false,
-    "retry": 0,
+    "restart_delay": 4,
+    "retry": 4,
     "retry_delay": 1,
     "log_level": "info",
     "chat_log_file": "chat.log",

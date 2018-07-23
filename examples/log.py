@@ -14,7 +14,7 @@ from util import get_config, configure_logger
 
 def log_chat(logger, event, data):
     time = data.get('time', 0)
-    time = strftime('%d/%m/%Y %H:%m:%S', localtime(time))
+    time = strftime('%d/%m/%Y %H:%m:%S', localtime(time // 1000))
     user = data.get('username', '<no username>')
     msg = data.get('msg', '<no message>')
     if event == 'pm':

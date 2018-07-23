@@ -7,7 +7,5 @@
     "restart_delay": 4,
     "retry": 4,
     "retry_delay": 1,
-    "log_level": "info",
-    "chat_log_file": "chat.log",
-    "media_log_file": "media.log"
+    "log_level": "info"
 }

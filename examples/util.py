@@ -3,7 +3,7 @@ import json
 import logging
 from html.parser import unescape, HTMLParser
 
-from cytube_bot import SocketIO
+from cytube_bot import SocketIO, set_proxy
 
 
 class MessageParser(HTMLParser):
@@ -48,6 +48,18 @@ def configure_logger(logger,
     return logger
 
 
+def configure_proxy(conf):
+    proxy = conf.get('proxy', None)
+    if not proxy:
+        return
+    proxy = proxy.rsplit(':', 1)
+    if len(proxy) == 1:
+        addr, port = proxy[0], 1080
+    else:
+        addr, port = proxy[0], int(proxy[1])
+    set_proxy(addr, port)
+
+
 def get_config():
     if len(sys.argv) != 2:
         raise RuntimeError('usage: %s <config file>' % sys.argv[0])
@@ -64,12 +76,14 @@ def get_config():
         format='[%(asctime).19s] [%(name)s] [%(levelname)s] %(message)s'
     )
 
+    configure_proxy(conf)
+
     return conf, {
         'domain': conf['domain'],
         'user': conf.get('user', None),
         'channel': conf.get('channel', None),
         'response_timeout': conf.get('response_timeout', 0.1),
-        'restart_on_error': conf.get('restart_on_error', False),
+        'restart_delay': conf.get('restart_delay', None),
         'socket_io': lambda url, loop: SocketIO.connect(
             url,
             retry=retry,
