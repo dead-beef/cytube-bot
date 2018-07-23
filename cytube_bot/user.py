@@ -7,17 +7,23 @@ class User:
     Attributes
     ----------
     name : `str`
-    password : `str` or `None`
-    ip : `str` or `None`
-        Cloaked IP.
+        Name.
+    password : `None` or `str`
+        Password.
     uncloaked_ip : `None` or `list` of `str`
         Uncloaked IP.
-    rank : `int`
+    rank : `float`
+        Rank.
     image : `str`
+        Profile image.
     text : `str`
+        Profile text.
     afk : `bool`
+        `True` if user is AFK.
     muted : `bool`
+        `True` if user is muted.
     smuted : `bool`
+        `True` if user is shadow muted.
     """
 
     def __init__(self,
@@ -38,8 +44,8 @@ class User:
 
     def __str__(self):
         if self.ip is None:
-            return '<user "%s" (rank %d)>' % (self.name, self.rank)
-        return '<user "%s" [%s %s] (rank %d)>' % (
+            return '<user "%s" (rank %.2f)>' % (self.name, self.rank)
+        return '<user "%s" [%s %s] (rank %.2f)>' % (
             self.name, self.ip, self.uncloaked_ip, self.rank
         )
 
@@ -54,6 +60,8 @@ class User:
 
     @property
     def ip(self):
+        """Cloaked IP.
+        """
         return self._ip
 
     @ip.setter
@@ -106,7 +114,7 @@ class User:
         Parameters
         ----------
         name : `str` or `None`
-        rank: `int` or `None`
+        rank: `float` or `None`
         profile : `dict` or `None`
         meta : `dict` or `None`
         """

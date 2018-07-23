@@ -19,13 +19,15 @@ class Channel:
     css: `str`
     js: `str`
     emotes: `list` of `dict`
-    permissions : `dict` of (`str`, `int`)
+    permissions : `dict` of (`str`, `float`)
     options : `dict`
     userlist : `cytube_bot.user.UserList`
     playlist : `cytube_bot.playlist.Playlist`
     """
 
     logger = logging.getLogger(__name__)
+
+    RANK_PRECISION = 1e-4
 
     def __init__(self, name='', password=None):
         self.name = name
@@ -73,10 +75,10 @@ class Channel:
         """
         try:
             min_rank = self.permissions[action]
-            if user.rank < min_rank:
+            if user.rank + self.RANK_PRECISION < min_rank:
                 if throw:
                     raise ChannelPermissionError(
-                        '"%s": permission denied (%s rank %s < %s)'
+                        '"%s": permission denied (%s rank %.2f < %.2f)'
                         % (action, user.name, user.rank, min_rank)
                     )
                 return False
