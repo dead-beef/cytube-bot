@@ -5,6 +5,22 @@ from urllib.parse import urlparse, parse_qsl
 
 
 class MediaLink:
+    """Media link.
+
+    Attributes
+    ----------
+    type : `str`
+        Link type.
+    id : `str`
+        Link ID.
+    FILE_TYPES : `list` of `str`
+        Supported raw file extensions.
+    URL_TO_LINK : `list` of (`str`, `str`, `str`)
+        (url regexp, type format string, id format string)
+    LINK_TO_URL : `dict` of (`str`, `str`)
+        (type, url format string)
+    """
+
     logger = logging.getLogger(__name__)
 
     URL_TO_LINK = [
@@ -71,8 +87,17 @@ class MediaLink:
     def __repr__(self):
         return 'MediaLink(%r, %r)' % (self.type, self.id)
 
+    def __eq__(self, link):
+        return (
+            isinstance(link, self.__class__)
+            and self.type == link.type
+            and self.id == link.id
+        )
+
     @property
     def url(self):
+        """Media URL.
+        """
         try:
             url = self.LINK_TO_URL[self.type]
         except KeyError:
@@ -85,6 +110,22 @@ class MediaLink:
 
     @classmethod
     def from_url(cls, url):
+        """Create a media link from URL.
+
+        Parameters
+        ----------
+        url : `str`
+            Media URL.
+
+        Returns
+        -------
+        MediaLink
+
+        Raises
+        ------
+        ValueError
+            If media URL is not supported.
+        """
         url = url.strip().replace('feature=player_embedded&', '')
         parsed_url = urlparse(url)
 

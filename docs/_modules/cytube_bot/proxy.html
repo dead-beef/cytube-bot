@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>cytube_bot.proxy &mdash; cytube_bot 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> cytube_bot
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+    <a href="../../index.html">
+        README
+    </a>
+    <a href="../../genindex.html">
+        Index
+    </a>
+    
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">cytube_bot</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../source/cytube_bot.html">cytube_bot package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.bot">cytube_bot.bot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.channel">cytube_bot.channel module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.error">cytube_bot.error module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.media_link">cytube_bot.media_link module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.playlist">cytube_bot.playlist module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.proxy">cytube_bot.proxy module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.socket_io">cytube_bot.socket_io module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.user">cytube_bot.user module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot.util">cytube_bot.util module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/cytube_bot.html#module-cytube_bot">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">cytube_bot</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>cytube_bot.proxy</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for cytube_bot.proxy</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">socks</span>
+    <span class="n">HAS_PYSOCKS</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">SOCKS5</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">SOCKS5</span>
+    <span class="n">ProxyError</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">ProxyError</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">HAS_PYSOCKS</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">SOCKS5</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">class</span> <span class="nc">ProxyError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<span class="kn">from</span> <span class="nn">.error</span> <span class="k">import</span> <span class="n">ProxyConfigError</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;socks.getaddrinfo&#39;</span><span class="p">)</span>
+<span class="n">_orig_getaddrinfo</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span>
+
+
+<span class="c1"># https://web.archive.org/web/20161211104525/http://fitblip.pub/2012/11/13/proxying-dns-with-python/</span>
+<div class="viewcode-block" id="getaddrinfo"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.getaddrinfo">[docs]</a><span class="k">def</span> <span class="nf">getaddrinfo</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">proxy_type</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">rdns</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">get_default_proxy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">proxy_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rdns</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">_orig_getaddrinfo</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">:</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="wrap_module"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.wrap_module">[docs]</a><span class="k">def</span> <span class="nf">wrap_module</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;wrap module </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+    <span class="n">socks</span><span class="o">.</span><span class="n">wrap_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span> <span class="o">=</span> <span class="n">getaddrinfo</span></div>
+
+
+<div class="viewcode-block" id="set_proxy"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.set_proxy">[docs]</a><span class="k">def</span> <span class="nf">set_proxy</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">proxy_type</span><span class="o">=</span><span class="n">SOCKS5</span><span class="p">,</span> <span class="n">modules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set SOCKS proxy for all connections.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    addr : `str`</span>
+<span class="sd">        Proxy IP.</span>
+<span class="sd">    port : `int`</span>
+<span class="sd">        Proxy port.</span>
+<span class="sd">    proxy_type : `int`, optional</span>
+<span class="sd">        `socks.SOCKS4` or `socks.SOCKS5`.</span>
+<span class="sd">    modules : `None` or `list` of `types.ModuleType`, optional</span>
+<span class="sd">        Modules to wrap (default: (sys.modules[__name__],)).</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    cytube_bot.error.ProxyConfigError</span>
+<span class="sd">        If pysocks is not installed.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_PYSOCKS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ProxyConfigError</span><span class="p">(</span><span class="s1">&#39;pysocks is not installed&#39;</span><span class="p">)</span>
+    <span class="n">socks</span><span class="o">.</span><span class="n">set_default_proxy</span><span class="p">(</span>
+        <span class="n">proxy_type</span><span class="o">=</span><span class="n">proxy_type</span><span class="p">,</span>
+        <span class="n">addr</span><span class="o">=</span><span class="n">addr</span><span class="p">,</span>
+        <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+        <span class="n">rdns</span><span class="o">=</span><span class="n">proxy_type</span> <span class="o">==</span> <span class="n">socks</span><span class="o">.</span><span class="n">SOCKS5</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span> <span class="ow">or</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">],):</span>
+        <span class="n">wrap_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, dead-beef.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'0.1.0',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

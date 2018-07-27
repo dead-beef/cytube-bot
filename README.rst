@@ -4,7 +4,7 @@ cytube-bot
 Overview
 --------
 
-AsyncIO CyTube bot
+AsyncIO `CyTube <https://github.com/calzoneman/sync>`__ bot
 
 Requirements
 ------------
@@ -37,6 +37,7 @@ Testing
 Usage
 -----
 
+-  `Module documentation <https://dead-beef.github.io/cytube-bot/>`__
 -  `Examples <https://github.com/dead-beef/cytube-bot/blob/master/examples>`__
 
 

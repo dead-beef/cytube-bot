@@ -1,0 +1,86 @@
+cytube\_bot package
+===================
+
+Submodules
+----------
+
+cytube\_bot.bot module
+----------------------
+
+.. automodule:: cytube_bot.bot
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.channel module
+--------------------------
+
+.. automodule:: cytube_bot.channel
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.error module
+------------------------
+
+.. automodule:: cytube_bot.error
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.media\_link module
+------------------------------
+
+.. automodule:: cytube_bot.media_link
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.playlist module
+---------------------------
+
+.. automodule:: cytube_bot.playlist
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.proxy module
+------------------------
+
+.. automodule:: cytube_bot.proxy
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.socket\_io module
+-----------------------------
+
+.. automodule:: cytube_bot.socket_io
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.user module
+-----------------------
+
+.. automodule:: cytube_bot.user
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+cytube\_bot.util module
+-----------------------
+
+.. automodule:: cytube_bot.util
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: cytube_bot
+    :members:
+    :undoc-members:
+    :show-inheritance:
