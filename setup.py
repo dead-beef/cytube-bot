@@ -11,7 +11,7 @@ try:
 except IOError:
     README = ''
 
-setup(name='cytube_bot',
+setup(name='cytube-bot',
       version='0.1.0',
       description='AsyncIO CyTube bot',
       long_description=README,
