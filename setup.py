@@ -41,7 +41,7 @@ setup(name='cytube-bot',
               'coverage',
               'sphinx',
               'sphinx_rtd_theme',
-              'twine>=1.8.1',
+              'twine',
               'wheel'
           ]
       },
