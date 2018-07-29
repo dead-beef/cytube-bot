@@ -9,7 +9,7 @@ from time import localtime, strftime
 from cytube_bot import Bot
 from cytube_bot.error import CytubeError, SocketIOError
 
-from util import get_config, configure_logger
+from examples.util import get_config, configure_logger
 
 
 def log_chat(logger, event, data):

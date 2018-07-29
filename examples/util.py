@@ -62,7 +62,8 @@ def configure_proxy(conf):
 
 def get_config():
     if len(sys.argv) != 2:
-        raise RuntimeError('usage: %s <config file>' % sys.argv[0])
+        print('usage: %s <config file>' % sys.argv[0], file=sys.stderr)
+        sys.exit(1)
 
     with open(sys.argv[1], 'r') as fp:
         conf = json.load(fp)

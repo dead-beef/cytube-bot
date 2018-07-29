@@ -12,7 +12,7 @@ from markovchain.text import MarkovText, ReplyMode
 from cytube_bot import Bot
 from cytube_bot.error import CytubeError, SocketIOError
 
-from util import get_config, configure_logger, MessageParser
+from examples.util import get_config, configure_logger, MessageParser
 
 
 class MarkovBot(Bot):

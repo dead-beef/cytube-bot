@@ -6,7 +6,7 @@ import asyncio
 from cytube_bot import Bot
 from cytube_bot.error import CytubeError, SocketIOError
 
-from util import get_config, MessageParser
+from examples.util import get_config, MessageParser
 
 
 class EchoBot(Bot):
