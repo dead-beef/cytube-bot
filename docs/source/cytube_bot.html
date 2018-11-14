@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>cytube_bot package &mdash; cytube-bot 0.1.1 documentation</title>
+  <title>cytube_bot package &mdash; cytube-bot 0.1.2 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.1
+                0.1.2
               </div>
             
           
@@ -1148,6 +1148,12 @@
 </dd></dl>
 
 <dl class="attribute">
+<dt id="cytube_bot.socket_io.SocketIO.close_task">
+<code class="descname">close_task</code><a class="headerlink" href="#cytube_bot.socket_io.SocketIO.close_task" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.tasks.Task</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
 <dt id="cytube_bot.socket_io.SocketIO.closing">
 <code class="descname">closing</code><a class="headerlink" href="#cytube_bot.socket_io.SocketIO.closing" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Event</span></code></p>
@@ -1221,7 +1227,10 @@
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#cytube_bot.socket_io.SocketIO" title="cytube_bot.socket_io.SocketIO"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SocketIO</span></code></a></p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConnectionFailed</span></code></p>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConnectionFailed</span></code></li>
+<li><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.CancelledError</span></code></li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -1240,7 +1249,7 @@
 <li><strong>event</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>) – Event name.</li>
 <li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code>) – Event data.</li>
 <li><strong>get_response</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – </li>
-<li><strong>timeout</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, optional) – </li>
+<li><strong>timeout</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, optional) – Response timeout in seconds.</li>
 </ul>
 </td>
 </tr>
@@ -1634,7 +1643,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.1',
+            VERSION:'0.1.2',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

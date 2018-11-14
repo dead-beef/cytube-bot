@@ -78,7 +78,7 @@ author = 'dead-beef'
 # built documents.
 #
 # The short X.Y version.
-version = '0.1.1'
+version = '0.1.2'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -126,7 +126,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'cytubebotchaindoc'
+htmlhelp_basename = 'cytubebotdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
