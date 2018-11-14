@@ -22,6 +22,11 @@ else:
         def join(self):
             logger.info('join %s', self)
 
+try:
+    current_task = asyncio.current_task
+except AttributeError:
+    current_task = asyncio.Task.current_task
+
 
 def to_sequence(obj):
     """Convert an object to sequence.
