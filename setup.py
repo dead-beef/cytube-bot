@@ -12,7 +12,7 @@ except IOError:
     README = ''
 
 setup(name='cytube-bot',
-      version='0.1.2',
+      version='0.1.3',
       description='AsyncIO CyTube bot',
       long_description=README,
       classifiers=[
