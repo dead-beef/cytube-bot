@@ -272,9 +272,10 @@ class Bot:
     def disconnect(self):
         """Disconnect.
         """
-        if self.socket is None:
-            return
         self.logger.info('disconnect %s', self.server)
+        if self.socket is None:
+            self.logger.info('already disconnected')
+            return
         try:
             yield from self.socket.close()
         except Exception as ex:
@@ -357,20 +358,20 @@ class Bot:
         """Main loop.
         """
         try:
-            yield from self.login()
-            self.logger.info('start')
             while True:
                 try:
+                    if self.socket is None:
+                        self.logger.info('login')
+                        yield from self.login()
                     ev, data = yield from self.socket.recv()
+                    yield from self.trigger(ev, data)
                 except SocketIOError as ex:
                     self.logger.error('network error: %r', ex)
+                    yield from self.disconnect()
                     if self.restart_delay is None or self.restart_delay < 0:
                         break
                     self.logger.error('restarting')
                     yield from asyncio.sleep(self.restart_delay)
-                    yield from self.login()
-                else:
-                    yield from self.trigger(ev, data)
         except asyncio.CancelledError:
             self.logger.info('cancelled')
         finally:

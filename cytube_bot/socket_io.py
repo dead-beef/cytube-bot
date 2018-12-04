@@ -122,10 +122,10 @@ class SocketIO:
             except asyncio.QueueFull:
                 pass
 
-            self.logger.info('cancel response futures')
+            self.logger.info('set response future exception')
             for res in self.response.values():
                 if not res.done():
-                    res.cancel()
+                    res.set_exception(self.error)
             self.response = {}
 
             self.logger.info('cancel ping task')
