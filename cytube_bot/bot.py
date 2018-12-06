@@ -5,6 +5,7 @@ import asyncio
 import collections
 
 from .error import (
+    CytubeError,
     SocketConfigError, LoginError,
     ChannelError, ChannelPermissionError, Kicked
 )
@@ -245,7 +246,12 @@ class Bot:
         if not url.startswith('http'):
             url = 'https://' + url
         self.logger.info('get_socket_config %s', url)
-        conf = yield from self.get(url, loop=self.loop)
+        try:
+            conf = yield from self.get(url, loop=self.loop)
+        except (CytubeError, asyncio.CancelledError):
+            raise
+        except Exception as ex:
+            raise SocketIOError(ex)
         conf = json.loads(conf)
         self.logger.info(conf)
         if 'error' in conf:
