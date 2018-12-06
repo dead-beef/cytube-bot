@@ -20,21 +20,26 @@ class PyCoroutineMixin(object):
         signode.insert(0, addnodes.desc_annotation('coroutine ', 'coroutine '))
         return ret
 
+    def run(self):
+        self.name = self.parent
+        return super().run()
+
 
 class PyCoroutineFunction(PyCoroutineMixin, PyModulelevel):
     """Sphinx directive for coroutine functions."""
-
-    def run(self):
-        self.name = 'py:function'
-        return PyModulelevel.run(self)
-
+    parent = 'py:function'
 
 class PyCoroutineMethod(PyCoroutineMixin, PyClassmember):
     """Sphinx directive for coroutine methods."""
+    parent = 'py:method'
 
-    def run(self):
-        self.name = 'py:method'
-        return PyClassmember.run(self)
+class PyCoroutineClassmethod(PyCoroutineMixin, PyClassmember):
+    """Sphinx directive for coroutine class methods."""
+    parent = 'py:classmethod'
+
+class PyCoroutineStaticmethod(PyCoroutineMixin, PyClassmember):
+    """Sphinx directive for coroutine static methods."""
+    parent = 'py:staticmethod'
 
 
 class FunctionDocumenter(_FunctionDocumenter):
@@ -61,8 +66,18 @@ class MethodDocumenter(_MethodDocumenter):
             return ret
 
         obj = self.parent.__dict__.get(self.object_name)
+
+        if isinstance(obj, staticmethod):
+            method_type = 'coroutinestaticmethod'
+            obj = obj.__get__(self.parent, self.parent)
+        elif isinstance(obj, classmethod):
+            method_type = 'coroutineclassmethod'
+            obj = obj.__get__(self.parent, self.parent)
+        else:
+            method_type = 'coroutinemethod'
+
         if iscoroutinefunction(obj):
-            self.directivetype = 'coroutinemethod'
+            self.directivetype = method_type
             self.member_order = _MethodDocumenter.member_order + 2
         return ret
 
@@ -73,6 +88,8 @@ def setup(app):
     # Add new directives.
     app.add_directive_to_domain('py', 'coroutine', PyCoroutineFunction)
     app.add_directive_to_domain('py', 'coroutinemethod', PyCoroutineMethod)
+    app.add_directive_to_domain('py', 'coroutineclassmethod', PyCoroutineClassmethod)
+    app.add_directive_to_domain('py', 'coroutinestaticmethod', PyCoroutineStaticmethod)
 
     # Customize annotations for anything that looks like a coroutine.
     app.add_autodocumenter(FunctionDocumenter)
