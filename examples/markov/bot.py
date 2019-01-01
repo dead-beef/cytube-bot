@@ -12,6 +12,7 @@ from markovchain.text import MarkovText, ReplyMode
 from cytube_bot import Bot, MessageParser
 from cytube_bot.error import CytubeError, SocketIOError
 
+from examples.shell import Shell
 from examples.config import get_config, configure_logger
 
 
@@ -296,16 +297,25 @@ def main():
         loop=loop,
         **kwargs
     )
+    shell = Shell(conf.get('shell', None), bot, loop=loop)
     try:
         task = loop.create_task(bot.run())
-        loop.run_until_complete(task)
+        if shell.task is not None:
+            task_ = asyncio.gather(task, shell.task)
+        else:
+            task_ = task
+        loop.run_until_complete(task_)
     except (CytubeError, SocketIOError) as ex:
         print(repr(ex), file=sys.stderr)
     except KeyboardInterrupt:
-        task.cancel()
-        loop.run_forever()
         return 0
     finally:
+        task_.cancel()
+        task.cancel()
+        shell.close()
+        loop.run_until_complete(task)
+        if shell.task is not None:
+            loop.run_until_complete(shell.task)
         markov.save()
         loop.close()
 

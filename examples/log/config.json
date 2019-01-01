@@ -1,5 +1,6 @@
 {
     "proxy": null,
+    "shell": "127.0.0.1:8081",
     "domain": "https://cytu.be",
     "user": ["name", "password"],
     "channel": ["name", "password"],
