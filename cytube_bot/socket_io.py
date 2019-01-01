@@ -1,3 +1,4 @@
+import re
 import json
 import socket
 import asyncio
@@ -14,6 +15,62 @@ from .error import (
 from .proxy import ProxyError
 
 
+class SocketIOResponse:
+    """socket.io event response.
+
+    Attributes
+    ----------
+    id : `int`
+    match : `function`(`str`, `object`)
+    future : `asyncio.Future`
+    """
+    MAX_ID = 2 ** 32
+    last_id = 0
+
+    def __init__(self, match):
+        self.id = (self.last_id + 1) % self.MAX_ID
+        self.last_id = self.id
+        self.match = match
+        self.future = asyncio.Future()
+
+    def __eq__(self, res):
+        if isinstance(res, SocketIOResponse):
+            return self is res
+        return self.id == res
+
+    def __str__(self):
+        return '<SocketIOResponse #%d>' % self.id
+
+    __repr__ = __str__
+
+    def set(self, value):
+        self.future.set_result(value)
+
+    def cancel(self, ex=None):
+        if not self.future.done():
+            if ex is None:
+                self.future.cancel()
+            else:
+                self.future.set_exception(ex)
+
+    @staticmethod
+    def match_event(ev=None, data=None):
+        def match(ev_, data_):
+            if not re.match(ev, ev_):
+                return False
+            if data is not None:
+                if isinstance(data, dict):
+                    if not isinstance(data_, dict):
+                        return False
+                    for key, value in data.items():
+                        if value != data_.get(key):
+                            return False
+                else:
+                    raise NotImplementedError('match_event !isinstance(data, dict)')
+            return True
+        return match
+
+
 class SocketIO:
     """Asynchronous socket.io connection.
 
@@ -28,8 +85,8 @@ class SocketIO:
     error : `None` or `Exception`
     events : `asyncio.Queue` of ((`str`, `object`) or `None`)
         Event queue.
-    response : `dict` of (`str`, `asyncio.Future`)
-        (event, response future)
+    response : `list` of `cytube_bot.socket_io.SocketIOResponse`
+    response_lock : `asyncio.Lock`
     ping_task : `asyncio.tasks.Task`
     recv_task : `asyncio.tasks.Task`
     close_task : `asyncio.tasks.Task`
@@ -62,7 +119,8 @@ class SocketIO:
         self.closed = asyncio.Event(loop=self.loop)
         self.ping_response = asyncio.Event(loop=self.loop)
         self.events = Queue(maxsize=qsize, loop=self.loop)
-        self.response = {}
+        self.response = []
+        self.response_lock = asyncio.Lock()
         self.ping_interval = max(1, config.get('pingInterval', 10000) / 1000)
         self.ping_timeout = max(1, config.get('pingTimeout', 10000) / 1000)
         self.ping_task = self.loop.create_task(self._ping())
@@ -123,10 +181,9 @@ class SocketIO:
                 pass
 
             self.logger.info('set response future exception')
-            for res in self.response.values():
-                if not res.done():
-                    res.set_exception(self.error)
-            self.response = {}
+            for res in self.response:
+                res.cancel(self.error)
+            self.response = []
 
             self.logger.info('cancel ping task')
             self.ping_task.cancel()
@@ -179,7 +236,7 @@ class SocketIO:
         return ev
 
     @asyncio.coroutine
-    def emit(self, event, data, get_response=False, timeout=None):
+    def emit(self, event, data, match_response=False, response_timeout=None):
         """Send an event.
 
         Parameters
@@ -188,8 +245,9 @@ class SocketIO:
             Event name.
         data : `object`
             Event data.
-        get_response : `bool` or `str`, optional
-        timeout : `float` or `None`, optional
+        match_response : `function` or `None`, optional
+            Response match function.
+        response_timeout : `float` or `None`, optional
             Response timeout in seconds.
 
         Returns
@@ -206,41 +264,49 @@ class SocketIO:
             raise self.error # pylint:disable=raising-bad-type
         data = '42%s' % json.dumps((event, data))
         self.logger.info('emit %s', data)
+        release = False
+        response = None
         try:
-            if get_response:
-                if isinstance(get_response, str):
-                    response_event = get_response
-                else:
-                    response_event = event
-                if response_event in self.response:
-                    raise SocketIOError(
-                        'already waiting for "%s" response' % response_event
-                    )
-                self.logger.info('get response %s', data)
-                res = asyncio.Future(loop=self.loop)
-                self.response[response_event] = res
+            if match_response is not None:
+                yield from self.response_lock.acquire()
+                release = True
+                response = SocketIOResponse(match_response)
+                self.logger.info('get response %s', response)
+                self.response.append(response)
 
             yield from self.websocket.send(data)
 
-            if get_response:
-                if timeout is not None:
-                    res = asyncio.wait_for(res, timeout, loop=self.loop)
+            if match_response is not None:
+                self.response_lock.release()
+                release = False
+
+                if response_timeout is not None:
+                    res = asyncio.wait_for(response.future,
+                                           response_timeout,
+                                           loop=self.loop)
+                else:
+                    res = response.future
+
                 try:
                     res = yield from res
-                    self.logger.info('%s', self.response)
+                    self.logger.info('%s', res)
                 except asyncio.CancelledError:
-                    self.logger.info('response cancelled %s', response_event)
-                    try:
-                        del self.response[response_event]
-                    except KeyError:
-                        pass
+                    self.logger.info('response cancelled %s', event)
                     raise
-                except asyncio.TimeoutError:
-                    self.logger.info('response timeout %s', response_event)
-                    self.response[response_event].cancel()
-                    del self.response[response_event]
+                except asyncio.TimeoutError as ex:
+                    self.logger.info('response timeout %s', event)
+                    response.cancel()
                     res = None
-                self.logger.info('response %s %s', response_event, res)
+                finally:
+                    yield from self.response_lock.acquire()
+                    try:
+                        self.response.remove(response)
+                    except ValueError:
+                        pass
+                    finally:
+                        self.response_lock.release()
+
+                self.logger.info('response %s %r', event, res)
                 return res
         except asyncio.CancelledError:
             self.logger.error('emit cancelled')
@@ -250,6 +316,9 @@ class SocketIO:
             if not isinstance(ex, SocketIOError):
                 ex = SocketIOError(ex)
             raise ex
+        finally:
+            if release:
+                self.response_lock.release()
 
     @asyncio.coroutine
     def _ping(self):
@@ -297,30 +366,37 @@ class SocketIO:
                 elif data.startswith('3'):
                     self.logger.debug('pong %s', data[1:])
                     self.ping_response.set()
-                elif data.startswith('42'):
+                elif data.startswith('4'):
                     try:
-                        data = json.loads(data[2:])
-                        if not isinstance(data, list):
-                            raise ValueError('not an array')
-                        if len(data) == 0:
-                            raise ValueError('empty array')
-                        if len(data) == 1:
-                            event, data = data[0], None
-                        elif len(data) == 2:
-                            event, data = data
+                        if data[1] == '0':
+                            event = ''
+                            data = None
+                        elif data[1] == '1':
+                            event = data[2:]
+                            data = None
                         else:
-                            event = data[0]
-                            data = data[1:]
+                            data = json.loads(data[2:])
+                            if not isinstance(data, list):
+                                raise ValueError('not an array')
+                            if len(data) == 0:
+                                raise ValueError('empty array')
+                            if len(data) == 1:
+                                event, data = data[0], None
+                            elif len(data) == 2:
+                                event, data = data
+                            else:
+                                event = data[0]
+                                data = data[1:]
                     except ValueError as ex:
                         self.logger.error('invalid event %s: %r', data, ex)
                     else:
                         self.logger.debug('event %s %s', event, data)
-                        if event in self.response:
-                            self.logger.debug('response %s %s', event, data)
-                            self.response[event].set_result(data)
-                            del self.response[event]
-                        else:
-                            yield from self.events.put((event, data))
+                        yield from self.events.put((event, data))
+                        for response in self.response:
+                            if response.match(event, data):
+                                self.logger.debug('response %s %s', event, data)
+                                response.set((event, data))
+                                break
                 else:
                     self.logger.warning('unknown event: "%s"', data)
         except asyncio.CancelledError:
