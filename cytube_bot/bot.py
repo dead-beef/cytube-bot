@@ -610,5 +610,5 @@ class Bot:
             action = 'oplaylistdelete'
         self.channel.check_permission(action, self.user)
         if not isinstance(item, PlaylistItem):
-            item = self.playlist.get(item)
+            item = self.channel.playlist.get(item)
         yield from self.socket.emit('delete', item.uid)
