@@ -168,3 +168,25 @@ class UserList(dict):
         if user.name in self:
             raise ValueError('user exists: %s' % user.name)
         self[user.name] = user
+
+    def get(self, name):
+        """Get user by name.
+
+        Parameters
+        ----------
+        name : `str`
+            User name.
+
+        Returns
+        -------
+        `cytube_bot.user.User`
+
+        Raises
+        ------
+        ValueError
+            If user does not exist.
+        """
+        ret = super().get(name)
+        if ret is None:
+            raise ValueError('no user with name "%s"' % name)
+        return ret

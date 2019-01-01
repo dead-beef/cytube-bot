@@ -550,6 +550,37 @@ class Bot:
         yield from self.chat('/clear')
 
     @asyncio.coroutine
+    def kick(self, user, reason=''):
+        """Kick a user.
+
+        Parameters
+        ----------
+        user : `str` or `cytube_bot.user.User`
+        reason : `str`, optional
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        ValueError
+        """
+        self.channel.check_permission('kick', self.user)
+        if not isinstance(user, User):
+            user = self.channel.userlist.get(user)
+        if self.user.permission <= user.permission:
+            raise ChannelPermissionError('You do not have permission to kick ' + user.name)
+        res = yield from self.send(
+            'chatMsg',
+            {
+                'msg': '/kick %s %s' % (user.name, reason),
+                'meta': {},
+            },
+            'errorMsg',
+            self.response_timeout
+        )
+        if res is not None:
+            raise ChannelPermissionError(res.get('msg', '<no message>'))
+
+    @asyncio.coroutine
     def add_media(self, link, append=True, temp=True):
         """Add media link to playlist.
 
@@ -603,6 +634,7 @@ class Bot:
         Raises
         ------
         cytube_bot.error.ChannelPermissionError
+        ValueError
         """
         if self.channel.playlist.locked:
             action = 'playlistdelete'
@@ -612,3 +644,96 @@ class Bot:
         if not isinstance(item, PlaylistItem):
             item = self.channel.playlist.get(item)
         yield from self.socket.emit('delete', item.uid)
+
+    @asyncio.coroutine
+    def move_media(self, item, after):
+        """Move a playlist item.
+
+        Parameters
+        ----------
+        item: `int` or `cytube_bot.playlist.PlaylistItem`
+        after: `int` or `cytube_bot.playlist.PlaylistItem`
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        ValueError
+        """
+        if self.channel.playlist.locked:
+            action = 'playlistmove'
+        else:
+            action = 'oplaylistmove'
+        self.channel.check_permission(action, self.user)
+
+        if not isinstance(item, PlaylistItem):
+            item = self.channel.playlist.get(item)
+        if not isinstance(after, PlaylistItem):
+            after = self.channel.playlist.get(after)
+
+        yield from self.socket.emit('moveMedia', {
+            'from': item.uid,
+            'after': after.uid
+        })
+
+    @asyncio.coroutine
+    def set_current_media(self, item):
+        """Set current playlist item.
+
+        Parameters
+        ----------
+        item: `int` or `cytube_bot.playlist.PlaylistItem`
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        ValueError
+        """
+        if self.channel.playlist.locked:
+            action = 'playlistjump'
+        else:
+            action = 'oplaylistjump'
+        self.channel.check_permission(action, self.user)
+        if not isinstance(item, PlaylistItem):
+            item = self.channel.playlist.get(item)
+        yield from self.socket.emit('jumpTo', item.uid)
+
+    @asyncio.coroutine
+    def set_leader(self, user):
+        """Set leader.
+
+        Parameters
+        ----------
+        user: `str` or `cytube_bot.user.User`
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        ValueError
+        """
+        self.channel.check_permission('leaderctl', self.user)
+        if not isinstance(user, User):
+            user = self.channel.userlist.get(user)
+        yield from self.socket.emit('assignLeader', {
+            'name': user.name
+        })
+
+    @asyncio.coroutine
+    def pause(self):
+        """Pause current media.
+
+        Raises
+        ------
+        cytube_bot.error.ChannelPermissionError
+        """
+        if self.channel.userlist.leader is not self.user:
+            raise ChannelPermissionError('can not pause: not a leader')
+
+        if self.channel.playlist.current is None:
+            return
+
+        yield from self.socket.emit('mediaUpdate', {
+            'currentTime': self.channel.playlist.current_time,
+            'paused': True,
+            'id': self.channel.playlist.current.link.id,
+            'type': self.channel.playlist.current.link.type
+        })
