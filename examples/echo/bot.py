@@ -3,10 +3,10 @@
 import sys
 import asyncio
 
-from cytube_bot import Bot
+from cytube_bot import Bot, MessageParser
 from cytube_bot.error import CytubeError, SocketIOError
 
-from examples.util import get_config, MessageParser
+from examples.config import get_config
 
 
 class EchoBot(Bot):

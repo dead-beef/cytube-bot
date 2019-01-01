@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from html.parser import HTMLParser, unescape
 from hashlib import md5
 from base64 import b64encode
 from itertools import islice
@@ -26,6 +27,95 @@ try:
     current_task = asyncio.current_task
 except AttributeError:
     current_task = asyncio.Task.current_task
+
+
+class MessageParser(HTMLParser):
+    """Chat message parser.
+
+    Attributes
+    ----------
+    markup : `None` or `list` of (`str`, `None` or `dict` of (`str`, `str`), `None` or `str`, `None` or `str`)
+    message : `str`
+    tags : `list` of (`str`, `str`)
+    """
+
+    DEFAULT_MARKUP = [
+        ('code', None, '`', '`'),
+        ('strong', None, '*', '*'),
+        ('em', None, '_', '_'),
+        ('s', None, '~~', '~~'),
+        (None, {'class': 'spoiler'}, '[sp]', '[/sp]')
+    ]
+
+    def __init__(self, markup=DEFAULT_MARKUP):
+        super().__init__()
+        self.markup = markup
+        self.message = ''
+        self.tags = []
+
+    def get_tag_markup(self, tag, attr):
+        if self.markup is None:
+            return None
+        attr = dict(attr)
+        for tag_, attr_, start, end in self.markup:
+            if tag_ is not None and tag_ != tag:
+                continue
+            if attr_ is not None:
+                match = True
+                for name, value in attr_.items():
+                    if attr.get(name, None) != value:
+                        match = False
+                        break
+                if not match:
+                    continue
+            return start, end
+
+    def handle_starttag(self, tag, attr):
+        markup = self.get_tag_markup(tag, attr)
+        if markup is not None:
+            start, end = markup
+            if start is not None:
+                self.message += start
+            if end is not None:
+                self.tags.append((tag, end))
+        else:
+            for name, value in attr:
+                if name in ('src', 'href'):
+                    self.message += ' %s ' % value
+
+    def handle_endtag(self, tag):
+        while len(self.tags):
+            tag_, end = self.tags.pop()
+            self.message += end
+            if tag_ == tag:
+                return
+
+    def handle_data(self, data):
+        self.message += unescape(data)
+
+    def parse(self, msg):
+        """Parse a message.
+
+        Parameters
+        ----------
+        msg : `str`
+            Message to parse.
+
+        Returns
+        -------
+        `str`
+            Parsed message.
+        """
+        self.message = ''
+        self.tags = []
+        self.feed(msg)
+        self.close()
+        self.reset()
+
+        for _, end in reversed(self.tags):
+            self.message += end
+
+        return self.message
 
 
 def to_sequence(obj):

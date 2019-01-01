@@ -1,30 +1,8 @@
 import sys
 import json
 import logging
-from html.parser import unescape, HTMLParser
 
 from cytube_bot import SocketIO, set_proxy
-
-
-class MessageParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.message = ''
-
-    def handle_starttag(self, _, attr):
-        for name, value in attr:
-            if name in ('src', 'href'):
-                self.message += ' %s ' % value
-
-    def handle_data(self, data):
-        self.message += unescape(data)
-
-    def parse(self, msg):
-        self.message = ''
-        self.feed(msg)
-        self.close()
-        self.reset()
-        return self.message
 
 
 def configure_logger(logger,
