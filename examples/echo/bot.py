@@ -6,6 +6,7 @@ import asyncio
 from cytube_bot import Bot, MessageParser
 from cytube_bot.error import CytubeError, SocketIOError
 
+from examples.shell import Shell
 from examples.config import get_config
 
 
@@ -29,7 +30,7 @@ class EchoBot(Bot):
 
 
 def main():
-    _, kwargs = get_config()
+    conf, kwargs = get_config()
     loop = asyncio.get_event_loop()
 
     bot = EchoBot(loop=loop, **kwargs)

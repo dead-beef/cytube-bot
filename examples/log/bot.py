@@ -9,6 +9,7 @@ from time import localtime, strftime
 from cytube_bot import Bot
 from cytube_bot.error import CytubeError, SocketIOError
 
+from examples.shell import Shell
 from examples.config import get_config, configure_logger
 
 
