@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>cytube_bot.proxy &mdash; cytube-bot 0.1.4 documentation</title>
+  <title>cytube_bot.proxy &mdash; cytube-bot 0.2.0 documentation</title>
   
 
   
@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.2.0
               </div>
             
           
@@ -178,18 +178,66 @@
     <span class="kn">import</span> <span class="nn">socks</span>
     <span class="n">HAS_PYSOCKS</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">SOCKS5</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">SOCKS5</span>
+
     <span class="n">ProxyError</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">ProxyError</span>
+    <span class="n">socksocket</span> <span class="o">=</span> <span class="n">socks</span><span class="o">.</span><span class="n">socksocket</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">HAS_PYSOCKS</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">SOCKS5</span> <span class="o">=</span> <span class="kc">None</span>
+
     <span class="k">class</span> <span class="nc">ProxyError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
         <span class="k">pass</span>
+
+    <span class="k">class</span> <span class="nc">socksocket</span><span class="p">:</span> <span class="c1"># pylint: disable=invalid-name,too-few-public-methods</span>
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">ProxyConfigError</span><span class="p">(</span><span class="s1">&#39;pysocks is not installed&#39;</span><span class="p">)</span>
+
 
 <span class="kn">from</span> <span class="nn">.error</span> <span class="k">import</span> <span class="n">ProxyConfigError</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;socks.getaddrinfo&#39;</span><span class="p">)</span>
 <span class="n">_orig_getaddrinfo</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span>
+
+
+<div class="viewcode-block" id="Socket"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.Socket">[docs]</a><span class="k">class</span> <span class="nc">Socket</span><span class="p">(</span><span class="n">socksocket</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;SOCKS enabled socket (no proxy for localhost).&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Socket.__init__"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.Socket.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">family</span><span class="o">=</span><span class="n">socket</span><span class="o">.</span><span class="n">AddressFamily</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span>
+                 <span class="nb">type</span><span class="o">=</span><span class="n">socket</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span>
+                 <span class="n">proto</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">fileno</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">,</span>
+                        <span class="n">socket</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">):</span>
+            <span class="nb">type</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">SocketType</span><span class="o">.</span><span class="n">SOCK_STREAM</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">proto</span><span class="p">,</span> <span class="n">fileno</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Socket.set_proxy_for_address"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.Socket.set_proxy_for_address">[docs]</a>    <span class="k">def</span> <span class="nf">set_proxy_for_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unset proxy for localhost.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        host : `str`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;set_proxy_for_address </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">addr</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;127.0.0.1&#39;</span><span class="p">,</span> <span class="s1">&#39;localhost&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_proxy</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">proxy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_proxy</span></div>
+
+<div class="viewcode-block" id="Socket.bind"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.Socket.bind">[docs]</a>    <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_proxy_for_address</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Socket.sendto"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.Socket.sendto">[docs]</a>    <span class="k">def</span> <span class="nf">sendto</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_proxy_for_address</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">sendto</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Socket.connect"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.Socket.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_proxy_for_address</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
 
 
 <span class="c1"># https://web.archive.org/web/20161211104525/http://fitblip.pub/2012/11/13/proxying-dns-with-python/</span>
@@ -205,8 +253,15 @@
 
 <div class="viewcode-block" id="wrap_module"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.wrap_module">[docs]</a><span class="k">def</span> <span class="nf">wrap_module</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;wrap module </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
-    <span class="n">socks</span><span class="o">.</span><span class="n">wrap_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-    <span class="n">module</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span> <span class="o">=</span> <span class="n">getaddrinfo</span></div>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_PYSOCKS</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ProxyConfigError</span><span class="p">(</span><span class="s1">&#39;pysocks is not installed&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">socksocket</span><span class="o">.</span><span class="n">default_proxy</span><span class="p">:</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">Socket</span>
+        <span class="n">module</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">getaddrinfo</span> <span class="o">=</span> <span class="n">getaddrinfo</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ProxyConfigError</span><span class="p">(</span><span class="s1">&#39;no default proxy specified&#39;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="set_proxy"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.proxy.set_proxy">[docs]</a><span class="k">def</span> <span class="nf">set_proxy</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">proxy_type</span><span class="o">=</span><span class="n">SOCKS5</span><span class="p">,</span> <span class="n">modules</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -272,7 +327,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1.4',
+            VERSION:'0.2.0',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>cytube_bot package &mdash; cytube-bot 0.1.4 documentation</title>
+  <title>cytube_bot package &mdash; cytube-bot 0.2.0 documentation</title>
   
 
   
@@ -58,7 +58,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.2.0
               </div>
             
           
@@ -316,15 +316,22 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>link</strong> (<a class="reference internal" href="#cytube_bot.media_link.MediaLink" title="cytube_bot.media_link.MediaLink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.media_link.MediaLink</span></code></a>) – Media link.</li>
+<li><strong>link</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> or <a class="reference internal" href="#cytube_bot.media_link.MediaLink" title="cytube_bot.media_link.MediaLink"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.media_link.MediaLink</span></code></a>) – Media link.</li>
 <li><strong>append</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – <code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code> - append, <code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code> - insert after current item.</li>
 <li><strong>temp</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – <code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code> to add temporary item.</li>
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Playlist item data.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></p>
+</td>
+</tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
 <li><a class="reference internal" href="#cytube_bot.error.ChannelError" title="cytube_bot.error.ChannelError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelError</span></code></a></li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></li>
 </ul>
 </td>
 </tr>
@@ -346,7 +353,16 @@
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Message data.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#cytube_bot.error.ChannelError" title="cytube_bot.error.ChannelError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelError</span></code></a></li>
+<li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -401,6 +417,31 @@
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="cytube_bot.bot.Bot.kick">
+<em class="property">coroutine </em><code class="descname">kick</code><span class="sig-paren">(</span><em>user</em>, <em>reason=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.kick"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.kick" title="Permalink to this definition">¶</a></dt>
+<dd><p>Kick a user.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>user</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> or <a class="reference internal" href="#cytube_bot.user.User" title="cytube_bot.user.User"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.user.User</span></code></a>) – </li>
+<li><strong>reason</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#cytube_bot.error.ChannelError" title="cytube_bot.error.ChannelError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelError</span></code></a></li>
+<li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt id="cytube_bot.bot.Bot.logger">
 <code class="descname">logger</code><em class="property"> = &lt;logging.Logger object&gt;</em><a class="headerlink" href="#cytube_bot.bot.Bot.logger" title="Permalink to this definition">¶</a></dt>
@@ -417,6 +458,31 @@
 <tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference internal" href="#cytube_bot.error.LoginError" title="cytube_bot.error.LoginError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.error.LoginError</span></code></a></li>
 <li><a class="reference internal" href="#cytube_bot.error.SocketIOError" title="cytube_bot.error.SocketIOError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.error.SocketIOError</span></code></a></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.bot.Bot.move_media">
+<em class="property">coroutine </em><code class="descname">move_media</code><span class="sig-paren">(</span><em>item</em>, <em>after</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.move_media"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.move_media" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move a playlist item.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>item</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> or <a class="reference internal" href="#cytube_bot.playlist.PlaylistItem" title="cytube_bot.playlist.PlaylistItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.playlist.PlaylistItem</span></code></a>) – </li>
+<li><strong>after</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> or <a class="reference internal" href="#cytube_bot.playlist.PlaylistItem" title="cytube_bot.playlist.PlaylistItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.playlist.PlaylistItem</span></code></a>) – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#cytube_bot.error.ChannelError" title="cytube_bot.error.ChannelError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelError</span></code></a></li>
+<li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></li>
 </ul>
 </td>
 </tr>
@@ -461,6 +527,20 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="cytube_bot.bot.Bot.pause">
+<em class="property">coroutine </em><code class="descname">pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.pause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pause current media.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="cytube_bot.bot.Bot.pm">
 <em class="property">coroutine </em><code class="descname">pm</code><span class="sig-paren">(</span><em>to</em>, <em>msg</em>, <em>meta=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.pm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.pm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a private chat message.</p>
@@ -475,6 +555,12 @@
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Message data.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code></p>
+</td>
+</tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
 <li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
 <li><a class="reference internal" href="#cytube_bot.error.ChannelError" title="cytube_bot.error.ChannelError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelError</span></code></a></li>
@@ -486,6 +572,12 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="cytube_bot.bot.Bot.remove_leader">
+<em class="property">coroutine </em><code class="descname">remove_leader</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.remove_leader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.remove_leader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove leader.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="cytube_bot.bot.Bot.remove_media">
 <em class="property">coroutine </em><code class="descname">remove_media</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.remove_media"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.remove_media" title="Permalink to this definition">¶</a></dt>
 <dd><p>Remove playlist item.</p>
@@ -493,9 +585,14 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>item</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> or <a class="reference internal" href="#cytube_bot.playlist.PlaylistItem" title="cytube_bot.playlist.PlaylistItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.playlist.PlaylistItem</span></code></a>) – Item to remove.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>item</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> or <a class="reference internal" href="#cytube_bot.playlist.PlaylistItem" title="cytube_bot.playlist.PlaylistItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.playlist.PlaylistItem</span></code></a>) – Item to remove.</p>
+</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></td>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -518,6 +615,50 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>value</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code>, optional) – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.bot.Bot.set_current_media">
+<em class="property">coroutine </em><code class="descname">set_current_media</code><span class="sig-paren">(</span><em>item</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.set_current_media"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.set_current_media" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set current playlist item.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>item</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code> or <a class="reference internal" href="#cytube_bot.playlist.PlaylistItem" title="cytube_bot.playlist.PlaylistItem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.playlist.PlaylistItem</span></code></a>) – </p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#cytube_bot.error.ChannelError" title="cytube_bot.error.ChannelError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelError</span></code></a></li>
+<li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.bot.Bot.set_leader">
+<em class="property">coroutine </em><code class="descname">set_leader</code><span class="sig-paren">(</span><em>user</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/bot.html#Bot.set_leader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.bot.Bot.set_leader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set leader.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>user</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code> or <a class="reference internal" href="#cytube_bot.user.User" title="cytube_bot.user.User"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.user.User</span></code></a>) – </p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><a class="reference internal" href="#cytube_bot.error.ChannelPermissionError" title="cytube_bot.error.ChannelPermissionError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelPermissionError</span></code></a></li>
+<li><a class="reference internal" href="#cytube_bot.error.ChannelError" title="cytube_bot.error.ChannelError"><code class="xref py py-exc docutils literal notranslate"><span class="pre">cytube_bot.error.ChannelError</span></code></a></li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -1058,6 +1199,56 @@
 </div>
 <div class="section" id="module-cytube_bot.proxy">
 <span id="cytube-bot-proxy-module"></span><h2>cytube_bot.proxy module<a class="headerlink" href="#module-cytube_bot.proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cytube_bot.proxy.Socket">
+<em class="property">class </em><code class="descclassname">cytube_bot.proxy.</code><code class="descname">Socket</code><span class="sig-paren">(</span><em>family=&lt;AddressFamily.AF_INET: 2&gt;</em>, <em>type=&lt;SocketType.SOCK_STREAM: 1&gt;</em>, <em>proto=0</em>, <em>fileno=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/proxy.html#Socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.proxy.Socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">socks.socksocket</span></code></p>
+<p>SOCKS enabled socket (no proxy for localhost).</p>
+<dl class="method">
+<dt id="cytube_bot.proxy.Socket.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>family=&lt;AddressFamily.AF_INET: 2&gt;</em>, <em>type=&lt;SocketType.SOCK_STREAM: 1&gt;</em>, <em>proto=0</em>, <em>fileno=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/proxy.html#Socket.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.proxy.Socket.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.proxy.Socket.bind">
+<code class="descname">bind</code><span class="sig-paren">(</span><em>addr</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/proxy.html#Socket.bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.proxy.Socket.bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements proxy connection for UDP sockets.</p>
+<p>Happens during the bind() phase.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.proxy.Socket.connect">
+<code class="descname">connect</code><span class="sig-paren">(</span><em>addr</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/proxy.html#Socket.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.proxy.Socket.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connects to the specified destination through a proxy.
+Uses the same API as socket’s connect().
+To select the proxy server, use set_proxy().</p>
+<p>dest_pair - 2-tuple of (IP/hostname, port).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.proxy.Socket.sendto">
+<code class="descname">sendto</code><span class="sig-paren">(</span><em>data</em>, <span class="optional">[</span><em>flags</em>, <span class="optional">]</span><em>address</em><span class="sig-paren">)</span> &#x2192; count<a class="reference internal" href="../_modules/cytube_bot/proxy.html#Socket.sendto"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.proxy.Socket.sendto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Like send(data, flags) but allows specifying the destination address.
+For IP sockets, the address is a pair (hostaddr, port).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.proxy.Socket.set_proxy_for_address">
+<code class="descname">set_proxy_for_address</code><span class="sig-paren">(</span><em>addr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/proxy.html#Socket.set_proxy_for_address"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.proxy.Socket.set_proxy_for_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unset proxy for localhost.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>host</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>) – </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="cytube_bot.proxy.getaddrinfo">
 <code class="descclassname">cytube_bot.proxy.</code><code class="descname">getaddrinfo</code><span class="sig-paren">(</span><em>host</em>, <em>port</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/proxy.html#getaddrinfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.proxy.getaddrinfo" title="Permalink to this definition">¶</a></dt>
@@ -1132,7 +1323,13 @@
 <dl class="attribute">
 <dt id="cytube_bot.socket_io.SocketIO.response">
 <code class="descname">response</code><a class="headerlink" href="#cytube_bot.socket_io.SocketIO.response" title="Permalink to this definition">¶</a></dt>
-<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> of (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Future</span></code>) – (event, response future)</p>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code> of <a class="reference internal" href="#cytube_bot.socket_io.SocketIOResponse" title="cytube_bot.socket_io.SocketIOResponse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.socket_io.SocketIOResponse</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.socket_io.SocketIO.response_lock">
+<code class="descname">response_lock</code><a class="headerlink" href="#cytube_bot.socket_io.SocketIO.response_lock" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Lock</span></code></p>
 </dd></dl>
 
 <dl class="attribute">
@@ -1239,7 +1436,7 @@
 
 <dl class="method">
 <dt id="cytube_bot.socket_io.SocketIO.emit">
-<em class="property">coroutine </em><code class="descname">emit</code><span class="sig-paren">(</span><em>event</em>, <em>data</em>, <em>get_response=False</em>, <em>timeout=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/socket_io.html#SocketIO.emit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.socket_io.SocketIO.emit" title="Permalink to this definition">¶</a></dt>
+<em class="property">coroutine </em><code class="descname">emit</code><span class="sig-paren">(</span><em>event</em>, <em>data</em>, <em>match_response=False</em>, <em>response_timeout=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/socket_io.html#SocketIO.emit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.socket_io.SocketIO.emit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send an event.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1248,8 +1445,8 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>event</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>) – Event name.</li>
 <li><strong>data</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code>) – Event data.</li>
-<li><strong>get_response</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">bool</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, optional) – </li>
-<li><strong>timeout</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, optional) – Response timeout in seconds.</li>
+<li><strong>match_response</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">function</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, optional) – Response match function.</li>
+<li><strong>response_timeout</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">float</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, optional) – Response timeout in seconds.</li>
 </ul>
 </td>
 </tr>
@@ -1296,6 +1493,62 @@
 </tbody>
 </table>
 </dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="cytube_bot.socket_io.SocketIOResponse">
+<em class="property">class </em><code class="descclassname">cytube_bot.socket_io.</code><code class="descname">SocketIOResponse</code><span class="sig-paren">(</span><em>match</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/socket_io.html#SocketIOResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>socket.io event response.</p>
+<dl class="attribute">
+<dt id="cytube_bot.socket_io.SocketIOResponse.id">
+<code class="descname">id</code><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.id" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">int</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.socket_io.SocketIOResponse.match">
+<code class="descname">match</code><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.match" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">function`(`str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">object</span></code>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.socket_io.SocketIOResponse.future">
+<code class="descname">future</code><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.future" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">asyncio.Future</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.socket_io.SocketIOResponse.MAX_ID">
+<code class="descname">MAX_ID</code><em class="property"> = 4294967296</em><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.MAX_ID" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.socket_io.SocketIOResponse.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>match</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/socket_io.html#SocketIOResponse.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.socket_io.SocketIOResponse.cancel">
+<code class="descname">cancel</code><span class="sig-paren">(</span><em>ex=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/socket_io.html#SocketIOResponse.cancel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.cancel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.socket_io.SocketIOResponse.last_id">
+<code class="descname">last_id</code><em class="property"> = 0</em><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.last_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="staticmethod">
+<dt id="cytube_bot.socket_io.SocketIOResponse.match_event">
+<em class="property">static </em><code class="descname">match_event</code><span class="sig-paren">(</span><em>ev=None</em>, <em>data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/socket_io.html#SocketIOResponse.match_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.match_event" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.socket_io.SocketIOResponse.set">
+<code class="descname">set</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/socket_io.html#SocketIOResponse.set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.socket_io.SocketIOResponse.set" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -1444,6 +1697,26 @@
 </table>
 </dd></dl>
 
+<dl class="method">
+<dt id="cytube_bot.user.UserList.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/user.html#UserList.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.user.UserList.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get user by name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>) – User name.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#cytube_bot.user.User" title="cytube_bot.user.User"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cytube_bot.user.User</span></code></a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – If user does not exist.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 <dl class="attribute">
 <dt>
 <code class="descname">leader</code></dt>
@@ -1454,6 +1727,85 @@
 </div>
 <div class="section" id="module-cytube_bot.util">
 <span id="cytube-bot-util-module"></span><h2>cytube_bot.util module<a class="headerlink" href="#module-cytube_bot.util" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="cytube_bot.util.MessageParser">
+<em class="property">class </em><code class="descclassname">cytube_bot.util.</code><code class="descname">MessageParser</code><span class="sig-paren">(</span><em>markup=[('code', None, '`', '`'), ('strong', None, '*', '*'), ('em', None, '_', '_'), ('s', None, '~~', '~~'), (None, {'class': 'spoiler'}, '[sp]', '[/sp]')]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#MessageParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.MessageParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">html.parser.HTMLParser</span></code></p>
+<p>Chat message parser.</p>
+<dl class="attribute">
+<dt id="cytube_bot.util.MessageParser.markup">
+<code class="descname">markup</code><a class="headerlink" href="#cytube_bot.util.MessageParser.markup" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code> of (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">dict</span></code> of (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>), <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code> or <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.util.MessageParser.message">
+<code class="descname">message</code><a class="headerlink" href="#cytube_bot.util.MessageParser.message" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.util.MessageParser.tags">
+<code class="descname">tags</code><a class="headerlink" href="#cytube_bot.util.MessageParser.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">list</span></code> of (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="cytube_bot.util.MessageParser.DEFAULT_MARKUP">
+<code class="descname">DEFAULT_MARKUP</code><em class="property"> = [('code', None, '`', '`'), ('strong', None, '*', '*'), ('em', None, '_', '_'), ('s', None, '~~', '~~'), (None, {'class': 'spoiler'}, '[sp]', '[/sp]')]</em><a class="headerlink" href="#cytube_bot.util.MessageParser.DEFAULT_MARKUP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.util.MessageParser.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>markup=[('code', None, '`', '`'), ('strong', None, '*', '*'), ('em', None, '_', '_'), ('s', None, '~~', '~~'), (None, {'class': 'spoiler'}, '[sp]', '[/sp]')]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#MessageParser.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.MessageParser.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize and reset this instance.</p>
+<p>If convert_charrefs is True (default: False), all character references
+are automatically converted to the corresponding Unicode characters.
+If strict is set to False (the default) the parser will parse invalid
+markup, otherwise it will raise an error.  Note that the strict mode
+and argument are deprecated.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.util.MessageParser.get_tag_markup">
+<code class="descname">get_tag_markup</code><span class="sig-paren">(</span><em>tag</em>, <em>attr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#MessageParser.get_tag_markup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.MessageParser.get_tag_markup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.util.MessageParser.handle_data">
+<code class="descname">handle_data</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#MessageParser.handle_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.MessageParser.handle_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.util.MessageParser.handle_endtag">
+<code class="descname">handle_endtag</code><span class="sig-paren">(</span><em>tag</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#MessageParser.handle_endtag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.MessageParser.handle_endtag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.util.MessageParser.handle_starttag">
+<code class="descname">handle_starttag</code><span class="sig-paren">(</span><em>tag</em>, <em>attr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#MessageParser.handle_starttag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.MessageParser.handle_starttag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="cytube_bot.util.MessageParser.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#MessageParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.MessageParser.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a message.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> (<code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code>) – Message to parse.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Parsed message.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><code class="xref py py-obj docutils literal notranslate"><span class="pre">str</span></code></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="class">
 <dt id="cytube_bot.util.Queue">
 <em class="property">class </em><code class="descclassname">cytube_bot.util.</code><code class="descname">Queue</code><span class="sig-paren">(</span><em>maxsize=0</em>, <em>*</em>, <em>loop=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/cytube_bot/util.html#Queue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cytube_bot.util.Queue" title="Permalink to this definition">¶</a></dt>
@@ -1643,7 +1995,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.1.4',
+            VERSION:'0.2.0',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',

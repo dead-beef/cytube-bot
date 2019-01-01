@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>cytube_bot.socket_io &mdash; cytube-bot 0.1.4 documentation</title>
+  <title>cytube_bot.socket_io &mdash; cytube-bot 0.2.0 documentation</title>
   
 
   
@@ -57,7 +57,7 @@
             
             
               <div class="version">
-                0.1.4
+                0.2.0
               </div>
             
           
@@ -170,7 +170,8 @@
            <div itemprop="articleBody">
             
   <h1>Source code for cytube_bot.socket_io</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">socket</span>
 <span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -184,6 +185,62 @@
     <span class="n">ConnectionClosed</span><span class="p">,</span> <span class="n">PingTimeout</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.proxy</span> <span class="k">import</span> <span class="n">ProxyError</span>
+
+
+<div class="viewcode-block" id="SocketIOResponse"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.socket_io.SocketIOResponse">[docs]</a><span class="k">class</span> <span class="nc">SocketIOResponse</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;socket.io event response.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    id : `int`</span>
+<span class="sd">    match : `function`(`str`, `object`)</span>
+<span class="sd">    future : `asyncio.Future`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">MAX_ID</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">32</span>
+    <span class="n">last_id</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="SocketIOResponse.__init__"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.socket_io.SocketIOResponse.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">match</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_ID</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">match</span> <span class="o">=</span> <span class="n">match</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">future</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">res</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">SocketIOResponse</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">res</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">res</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;SocketIOResponse #</span><span class="si">%d</span><span class="s1">&gt;&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+
+    <span class="fm">__repr__</span> <span class="o">=</span> <span class="fm">__str__</span>
+
+<div class="viewcode-block" id="SocketIOResponse.set"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.socket_io.SocketIOResponse.set">[docs]</a>    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">future</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SocketIOResponse.cancel"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.socket_io.SocketIOResponse.cancel">[docs]</a>    <span class="k">def</span> <span class="nf">cancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">future</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">ex</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">future</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">future</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SocketIOResponse.match_event"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.socket_io.SocketIOResponse.match_event">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">match_event</span><span class="p">(</span><span class="n">ev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="n">ev_</span><span class="p">,</span> <span class="n">data_</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">ev</span><span class="p">,</span> <span class="n">ev_</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">data_</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+                            <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;match_event !isinstance(data, dict)&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">match</span></div></div>
 
 
 <div class="viewcode-block" id="SocketIO"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.socket_io.SocketIO">[docs]</a><span class="k">class</span> <span class="nc">SocketIO</span><span class="p">:</span>
@@ -200,8 +257,8 @@
 <span class="sd">    error : `None` or `Exception`</span>
 <span class="sd">    events : `asyncio.Queue` of ((`str`, `object`) or `None`)</span>
 <span class="sd">        Event queue.</span>
-<span class="sd">    response : `dict` of (`str`, `asyncio.Future`)</span>
-<span class="sd">        (event, response future)</span>
+<span class="sd">    response : `list` of `cytube_bot.socket_io.SocketIOResponse`</span>
+<span class="sd">    response_lock : `asyncio.Lock`</span>
 <span class="sd">    ping_task : `asyncio.tasks.Task`</span>
 <span class="sd">    recv_task : `asyncio.tasks.Task`</span>
 <span class="sd">    close_task : `asyncio.tasks.Task`</span>
@@ -234,7 +291,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ping_response</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Event</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">qsize</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">response_lock</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Lock</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ping_interval</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pingInterval&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ping_timeout</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;pingTimeout&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ping_task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ping</span><span class="p">())</span>
@@ -295,10 +353,9 @@
                 <span class="k">pass</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;set response future exception&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">done</span><span class="p">():</span>
-                    <span class="n">res</span><span class="o">.</span><span class="n">set_exception</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">:</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">cancel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">response</span> <span class="o">=</span> <span class="p">[]</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;cancel ping task&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ping_task</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
@@ -351,7 +408,7 @@
         <span class="k">return</span> <span class="n">ev</span></div>
 
 <div class="viewcode-block" id="SocketIO.emit"><a class="viewcode-back" href="../../source/cytube_bot.html#cytube_bot.socket_io.SocketIO.emit">[docs]</a>    <span class="nd">@asyncio</span><span class="o">.</span><span class="n">coroutine</span>
-    <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">get_response</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">match_response</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">response_timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Send an event.</span>
 
 <span class="sd">        Parameters</span>
@@ -360,8 +417,9 @@
 <span class="sd">            Event name.</span>
 <span class="sd">        data : `object`</span>
 <span class="sd">            Event data.</span>
-<span class="sd">        get_response : `bool` or `str`, optional</span>
-<span class="sd">        timeout : `float` or `None`, optional</span>
+<span class="sd">        match_response : `function` or `None`, optional</span>
+<span class="sd">            Response match function.</span>
+<span class="sd">        response_timeout : `float` or `None`, optional</span>
 <span class="sd">            Response timeout in seconds.</span>
 
 <span class="sd">        Returns</span>
@@ -378,41 +436,49 @@
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="c1"># pylint:disable=raising-bad-type</span>
         <span class="n">data</span> <span class="o">=</span> <span class="s1">&#39;42</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">((</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;emit </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">release</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">get_response</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">get_response</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">response_event</span> <span class="o">=</span> <span class="n">get_response</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">response_event</span> <span class="o">=</span> <span class="n">event</span>
-                <span class="k">if</span> <span class="n">response_event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="n">SocketIOError</span><span class="p">(</span>
-                        <span class="s1">&#39;already waiting for &quot;</span><span class="si">%s</span><span class="s1">&quot; response&#39;</span> <span class="o">%</span> <span class="n">response_event</span>
-                    <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;get response </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-                <span class="n">res</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Future</span><span class="p">(</span><span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="n">response_event</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span>
+            <span class="k">if</span> <span class="n">match_response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+                <span class="n">release</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">SocketIOResponse</span><span class="p">(</span><span class="n">match_response</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;get response </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
 
             <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">websocket</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">get_response</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">res</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">match_response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">response_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+                <span class="n">release</span> <span class="o">=</span> <span class="kc">False</span>
+
+                <span class="k">if</span> <span class="n">response_timeout</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">res</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">future</span><span class="p">,</span>
+                                           <span class="n">response_timeout</span><span class="p">,</span>
+                                           <span class="n">loop</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loop</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">res</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">future</span>
+
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">res</span> <span class="o">=</span> <span class="k">yield from</span> <span class="n">res</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
                 <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;response cancelled </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">response_event</span><span class="p">)</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="n">response_event</span><span class="p">]</span>
-                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                        <span class="k">pass</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;response cancelled </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
                     <span class="k">raise</span>
-                <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;response timeout </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">response_event</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="n">response_event</span><span class="p">]</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
-                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="n">response_event</span><span class="p">]</span>
+                <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;response timeout </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+                    <span class="n">response</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
                     <span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;response </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">response_event</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">response_lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                    <span class="k">finally</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">response_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;response </span><span class="si">%s</span><span class="s1"> </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">res</span>
         <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;emit cancelled&#39;</span><span class="p">)</span>
@@ -421,7 +487,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;emit error: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">SocketIOError</span><span class="p">):</span>
                 <span class="n">ex</span> <span class="o">=</span> <span class="n">SocketIOError</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="n">ex</span></div>
+            <span class="k">raise</span> <span class="n">ex</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">release</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">response_lock</span><span class="o">.</span><span class="n">release</span><span class="p">()</span></div>
 
     <span class="nd">@asyncio</span><span class="o">.</span><span class="n">coroutine</span>
     <span class="k">def</span> <span class="nf">_ping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -469,30 +538,37 @@
                 <span class="k">elif</span> <span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;pong </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">ping_response</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
-                <span class="k">elif</span> <span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;42&#39;</span><span class="p">):</span>
+                <span class="k">elif</span> <span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;4&#39;</span><span class="p">):</span>
                     <span class="k">try</span><span class="p">:</span>
-                        <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
-                        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;not an array&#39;</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;empty array&#39;</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                            <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span>
-                        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                            <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+                        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;0&#39;</span><span class="p">:</span>
+                            <span class="n">event</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                            <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;1&#39;</span><span class="p">:</span>
+                            <span class="n">event</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+                            <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="n">event</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;not an array&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;empty array&#39;</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                                <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span>
+                            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                                <span class="n">event</span><span class="p">,</span> <span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">event</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
                     <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;invalid event </span><span class="si">%s</span><span class="s1">: </span><span class="si">%r</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;event </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;response </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="n">event</span><span class="p">]</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-                            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">[</span><span class="n">event</span><span class="p">]</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+                        <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">response</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">response</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;response </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                                <span class="n">response</span><span class="o">.</span><span class="n">set</span><span class="p">((</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+                                <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;unknown event: &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">CancelledError</span><span class="p">:</span>
@@ -671,7 +747,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.1.4',
+            VERSION:'0.2.0',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
