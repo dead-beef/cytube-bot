@@ -13,5 +13,6 @@
     "media_log_file": "media.log",
     "markov": "markov.db",
     "order": null,
-    "learn": false
+    "learn": false,
+    "trigger": null
 }

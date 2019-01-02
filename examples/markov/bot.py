@@ -32,10 +32,10 @@ class MarkovBot(Bot):
     LINK = re.compile(r'\bhttps?://\S+', re.I)
 
     def __init__(self, markov, chat_logger, media_logger,
-                 *args, order=None, learn=False, **kwargs):
+                 *args, order=None, learn=False, trigger=None, **kwargs):
         super().__init__(*args, **kwargs)
         name = re.escape(self.user.name)
-        self.trigger_expr = re.compile(name, re.I)
+        self.trigger_expr = re.compile(trigger or name, re.I)
         self.user_name_expr = re.compile(r'\b%s(:|\b)' % name, re.I)
         self.markov = markov
         self.markov_order = order
@@ -294,6 +294,7 @@ def main():
         markov, chat_logger, media_logger,
         order=conf.get('order', None),
         learn=conf.get('learn', False),
+        trigger=conf.get('trigger', None),
         loop=loop,
         **kwargs
     )
