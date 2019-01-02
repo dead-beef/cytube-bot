@@ -29,7 +29,7 @@ class SocketIOResponse:
 
     def __init__(self, match):
         self.id = (self.last_id + 1) % self.MAX_ID
-        self.last_id = self.id
+        self.__class__.last_id = self.id
         self.match = match
         self.future = asyncio.Future()
 
