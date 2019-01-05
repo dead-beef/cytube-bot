@@ -328,7 +328,7 @@ class Bot:
             self.response_timeout
         )
         if res is None:
-            raise LoginError('joinChannel response timeout')
+            raise SocketIOError('joinChannel response timeout')
         if res[0] == 'needPassword':
             raise LoginError('invalid channel password')
 
@@ -347,7 +347,7 @@ class Bot:
                     self.response_timeout
                 )
                 if res is None:
-                    raise LoginError('login response timeout')
+                    raise SocketIOError('login response timeout')
                 res = res[1]
                 self.logger.info('login %s', res)
                 if res.get('success', False):
