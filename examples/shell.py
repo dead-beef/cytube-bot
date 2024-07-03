@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import asyncio
 import logging
 
@@ -6,6 +8,7 @@ class Shell:
     logger = logging.getLogger(__name__)
 
     def __init__(self, addr, bot, loop=None):
+        ''' addr: str, bot: cytube_bot.CytubeBot, loop: asyncio.AbstractEventLoop'''
         if addr is None:
             self.logger.warning('shell is disabled')
             self.host = None
@@ -32,19 +35,19 @@ class Shell:
         )
 
     @staticmethod
-    @asyncio.coroutine
-    def write(writer, string):
+    async def write(writer, string):
+        ''' Async function to write to a writer object '''
         writer.write(string.encode('utf-8'))
-        yield
-        yield from writer.drain()
+        await writer.drain()
 
     def close(self):
+        ''' Close the shell server '''
         if self.task is not None:
             self.logger.info('cancel shell task')
             self.task.cancel()
 
-    @asyncio.coroutine
-    def handle_connection(self, reader, writer):
+    async def handle_connection(self, reader, writer):
+        ''' Async function to handle a connection '''
         try:
             from cytube_bot import MediaLink, MessageParser
             bot = self.bot
@@ -55,8 +58,8 @@ class Shell:
             self.logger.info('accepted shell connection')
 
             while True:
-                yield from self.write(writer, '\\ ' if cmd else '>>> ')
-                line = yield from reader.readline()
+                await self.write(writer, '\\ ' if cmd else '>>> ')
+                line = await reader.readline()
                 line = line.decode('utf-8')
                 if line.endswith('|\n'):
                     cmd += line[:-2]
@@ -68,26 +71,26 @@ class Shell:
 
                 if cmd.startswith('exit') or cmd.startswith('quit'):
                     self.logger.info('exiting shell')
-                    yield from self.write(writer, 'exiting\n')
+                    await self.write(writer, 'exiting\n')
                     break
 
                 try:
                     res = eval(cmd)
                     if asyncio.iscoroutine(res):
-                        res = yield from res
-                except asyncio.CancelledError:
-                    raise
+                        res = await res
+                except asyncio.CancelledError as ex:
+                    raise ex
                 except Exception as ex:
                     res = ex
                 finally:
                     cmd = ''
 
-                yield from self.write(writer, '%r\n' % res)
+                await self.write(writer, '%r\n' % res)
         except IOError as ex:
             self.logger.error('connection error: %r', ex)
         finally:
             writer.close()
             try:
-                yield from writer.wait_closed()
+                await writer.wait_closed()
             except AttributeError:
                 pass

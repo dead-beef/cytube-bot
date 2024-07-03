@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "cytube-bot-async"
+version = "0.1.0"
+description = "cytube-bot rewritten to be compatible with python > 3.4"
+authors = ["F. Grant Robertson <me@grantrobertson.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+sphinx-rtd-theme = "^2.0.0"
+socks = "^0"
+websocket = "^0.2.1"
+requests = "^2.32.3"
+pysocks = "^1.7.1"
+pytest = "^8.2.2"
+pytest-mock = "^3.14.0"
+coverage = "^7.5.4"
+twine = "^5.1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

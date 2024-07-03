@@ -142,8 +142,7 @@ class SocketIO:
             self.logger.info('create close task')
             self.close_task = self.loop.create_task(self.close())
 
-    @asyncio.coroutine
-    def close(self):
+    async def close(self):
         """Close the connection.
         """
         self.logger.info('close')
@@ -153,7 +152,7 @@ class SocketIO:
                 self.logger.info('current task is close task')
             else:
                 self.logger.info('wait for close task')
-                yield from asyncio.wait_for(self.close_task,
+                await asyncio.wait_for(self.close_task,
                                             None, loop=self.loop)
 
         if self.closed.is_set():
@@ -162,7 +161,7 @@ class SocketIO:
 
         if self.closing.is_set():
             self.logger.info('already closing, wait')
-            yield from self.closed.wait()
+            await self.closed.wait()
             return
 
         self.closing.set()
@@ -191,7 +190,7 @@ class SocketIO:
             self.recv_task.cancel()
 
             self.logger.info('wait for tasks')
-            yield from asyncio.wait_for(
+            await asyncio.wait_for(
                 asyncio.gather(self.ping_task, self.recv_task),
                 None, loop=self.loop
             )
@@ -199,23 +198,22 @@ class SocketIO:
             self.ping_response.clear()
 
             self.logger.info('close websocket')
-            yield from self.websocket.close()
+            await self.websocket.close()
 
             self.logger.info('clear event queue')
             while not self.events.empty():
-                ev = yield from self.events.get()
+                ev = await self.events.get()
                 self.events.task_done()
                 if isinstance(ev, Exception):
                     self.error = ev
-            #yield from self.events.join()
+            #await self.events.join()
         finally:
             self.ping_task = None
             self.recv_task = None
             self.websocket = None
             self.closed.set()
 
-    @asyncio.coroutine
-    def recv(self):
+    async def recv(self):
         """Receive an event.
 
         Returns
@@ -229,14 +227,13 @@ class SocketIO:
         """
         if self.error is not None:
             raise self.error # pylint:disable=raising-bad-type
-        ev = yield from self.events.get()
+        ev = await self.events.get()
         self.events.task_done()
         if ev is None:
             raise self.error # pylint:disable=raising-bad-type
         return ev
 
-    @asyncio.coroutine
-    def emit(self, event, data, match_response=False, response_timeout=None):
+    async def emit(self, event, data, match_response=False, response_timeout=None):
         """Send an event.
 
         Parameters
@@ -268,13 +265,13 @@ class SocketIO:
         response = None
         try:
             if match_response is not None:
-                yield from self.response_lock.acquire()
+                await self.response_lock.acquire()
                 release = True
                 response = SocketIOResponse(match_response)
                 self.logger.info('get response %s', response)
                 self.response.append(response)
 
-            yield from self.websocket.send(data)
+            await self.websocket.send(data)
 
             if match_response is not None:
                 self.response_lock.release()
@@ -288,7 +285,7 @@ class SocketIO:
                     res = response.future
 
                 try:
-                    res = yield from res
+                    res = await res
                     self.logger.info('%s', res)
                 except asyncio.CancelledError:
                     self.logger.info('response cancelled %s', event)
@@ -298,7 +295,7 @@ class SocketIO:
                     response.cancel()
                     res = None
                 finally:
-                    yield from self.response_lock.acquire()
+                    await self.response_lock.acquire()
                     try:
                         self.response.remove(response)
                     except ValueError:
@@ -320,18 +317,18 @@ class SocketIO:
             if release:
                 self.response_lock.release()
 
-    @asyncio.coroutine
-    def _ping(self):
+    
+    async def _ping(self):
         """Ping task."""
         try:
             dt = 0
             while self.error is None:
-                yield from asyncio.sleep(max(self.ping_interval - dt, 0))
+                await asyncio.sleep(max(self.ping_interval - dt, 0))
                 self.logger.debug('ping')
                 self.ping_response.clear()
                 dt = time()
-                yield from self.websocket.send('2')
-                yield from asyncio.wait_for(
+                await self.websocket.send('2')
+                await asyncio.wait_for(
                     self.ping_response.wait(),
                     self.ping_timeout,
                     loop=self.loop
@@ -352,17 +349,16 @@ class SocketIO:
             self.logger.error('ping error: %r', ex)
             self.error = ConnectionClosed(ex)
 
-    @asyncio.coroutine
-    def _recv(self):
+    async def _recv(self):
         """Read task."""
         try:
             while self.error is None:
-                data = yield from self.websocket.recv()
+                data = await self.websocket.recv()
                 self.logger.debug('recv %s', data)
                 if data.startswith('2'):
                     data = data[1:]
                     self.logger.debug('ping %s', data)
-                    yield from self.websocket.send('3' + data)
+                    await self.websocket.send('3' + data)
                 elif data.startswith('3'):
                     self.logger.debug('pong %s', data[1:])
                     self.ping_response.set()
@@ -391,7 +387,7 @@ class SocketIO:
                         self.logger.error('invalid event %s: %r', data, ex)
                     else:
                         self.logger.debug('event %s %s', event, data)
-                        yield from self.events.put((event, data))
+                        await self.events.put((event, data))
                         for response in self.response:
                             if response.match(event, data):
                                 self.logger.debug('response %s %s', event, data)
@@ -416,7 +412,7 @@ class SocketIO:
             raise
 
     @classmethod
-    def _get_config(cls, url, loop, get):
+    async def _get_config(cls, url, loop, get):
         """Get socket configuration.
 
         Parameters
@@ -431,7 +427,7 @@ class SocketIO:
         """
         url = url + '?EID=2&transport=polling'
         cls.logger.info('get %s', url)
-        data = yield from get(url, loop=loop)
+        data = await get(url, loop=loop)
         try:
             data = json.loads(data[data.index('{'):])
             if 'sid' not in data:
@@ -441,8 +437,7 @@ class SocketIO:
         return data
 
     @classmethod
-    @asyncio.coroutine
-    def _connect(cls, url, qsize, loop, get, connect):
+    async def _connect(cls, url, qsize, loop, get, connect):
         """Create a connection.
 
         Parameters
@@ -457,18 +452,18 @@ class SocketIO:
         -------
         `SocketIO`
         """
-        conf = yield from cls._get_config(url, loop, get)
+        conf = await cls._get_config(url, loop, get)
         sid = conf['sid']
         cls.logger.info('sid=%s', sid)
         url = '%s?EID=3&transport=websocket&sid=%s' % (
             url.replace('http', 'ws', 1), sid
         )
         cls.logger.info('connect %s', url)
-        websocket = yield from connect(url, loop=loop)
+        websocket = await connect(url, loop=loop)
         try:
             cls.logger.info('2probe')
-            yield from websocket.send('2probe')
-            res = yield from websocket.recv()
+            await websocket.send('2probe')
+            res = await websocket.recv()
             cls.logger.info('3probe')
             if res != '3probe':
                 raise websockets.exceptions.InvalidHandshake(
@@ -476,15 +471,14 @@ class SocketIO:
                     res
                 )
             cls.logger.info('upgrade')
-            yield from websocket.send('5')
+            await websocket.send('5')
             return SocketIO(websocket, conf, qsize, loop)
         except:
-            yield from websocket.close()
+            await websocket.close()
             raise
 
     @classmethod
-    @asyncio.coroutine
-    def connect(cls,
+    async def connect(cls,
                 url,
                 retry=-1,
                 retry_delay=1,
@@ -524,7 +518,7 @@ class SocketIO:
         i = 0
         while True:
             try:
-                io = yield from cls._connect(url, qsize, loop, get, connect)
+                io = await cls._connect(url, qsize, loop, get, connect)
                 return io
             except asyncio.CancelledError:
                 cls.logger.error(
@@ -540,4 +534,4 @@ class SocketIO:
                 if i == retry:
                     raise ConnectionFailed(ex)
             i += 1
-            yield from asyncio.sleep(retry_delay)
+            await asyncio.sleep(retry_delay)
